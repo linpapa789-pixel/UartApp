@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+    
+    <!-- Outer Chip Frame -->
+    <path
+        android:pathData="M38,38 h32 v32 h-32 z"
+        android:strokeWidth="2"
+        android:strokeColor="#38BDF8">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:startX="38"
+                android:startY="38"
+                android:endX="70"
+                android:endY="70"
+                android:type="linear">
+                <item android:color="#FF1E293B" android:offset="0.0"/>
+                <item android:color="#FF0F172A" android:offset="1.0"/>
+            </gradient>
+        </aapt:attr>
+    </path>
+
+    <!-- Chip Core -->
+    <path
+        android:pathData="M44,44 h20 v20 h-20 z"
+        android:fillColor="#0284C7" />
+
+    <!-- Terminal Prompt / Pulse Line inside Chip -->
+    <path
+        android:pathData="M47,54 L52,54 L55,49 L58,59 L61,54 L65,54"
+        android:strokeWidth="2"
+        android:strokeColor="#38BDF8"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <!-- Chip Pins (Top/Bottom/Left/Right) -->
+    <!-- Top Pins -->
+    <path android:pathData="M42,30 V38 M48,30 V38 M54,30 V38 M60,30 V38 M66,30 V38" android:strokeWidth="2" android:strokeColor="#0EA5E9" />
+    <!-- Bottom Pins -->
+    <path android:pathData="M42,70 V78 M48,70 V78 M54,70 V78 M60,70 V78 M66,70 V78" android:strokeWidth="2" android:strokeColor="#0EA5E9" />
+    <!-- Left Pins -->
+    <path android:pathData="M30,42 H38 M30,48 H38 M30,54 H38 M30,60 H38 M30,66 H38" android:strokeWidth="2" android:strokeColor="#0EA5E9" />
+    <!-- Right Pins -->
+    <path android:pathData="M70,42 H78 M70,48 H78 M70,54 H78 M70,60 H78 M70,66 H78" android:strokeWidth="2" android:strokeColor="#0EA5E9" />
+
+    <!-- TX / RX Indicator LEDs -->
+    <path android:pathData="M41,35 h2 v2 h-2 z" android:fillColor="#22C55E" />
+    <path android:pathData="M65,35 h2 v2 h-2 z" android:fillColor="#EF4444" />
+</vector>

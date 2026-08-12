@@ -1,0 +1,6 @@
+{
+  "name": "UART PRO AI",
+  "description": "Professional Mobile Phone Boot Log Analyzer",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
