@@ -2,36 +2,25 @@ package com.example.ui.theme
 
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
-private val OledDarkColorScheme = darkColorScheme(
-    primary = CyanAccent,
-    onPrimary = Color.Black,
-    primaryContainer = BentoSurfaceVariant,
-    onPrimaryContainer = CyanAccent,
-    secondary = NeonCyan,
-    onSecondary = Color.Black,
-    tertiary = BrightAmber,
-    background = BentoBackground,
-    onBackground = TextBright,
-    surface = BentoSurface,
-    onSurface = TextBright,
-    surfaceVariant = BentoSurfaceVariant,
-    onSurfaceVariant = TextMuted,
-    error = DangerRed,
-    onError = Color.White
-)
-
-private val LightColorScheme = lightColorScheme(
-    primary = Color(0xFF0284C7),
-    onPrimary = Color.White,
-    secondary = Color(0xFF0369A1),
-    background = Color(0xFFF8FAFC),
-    surface = Color.White,
-    onBackground = Color(0xFF0F172A),
-    onSurface = Color(0xFF0F172A)
+private val DarkColorScheme = darkColorScheme(
+    primary = AccentCyan,
+    onPrimary = AppBackground,
+    primaryContainer = CardBackground,
+    onPrimaryContainer = AccentCyan,
+    secondary = AccentCyan,
+    onSecondary = AppBackground,
+    tertiary = WarningYellow,
+    background = AppBackground,
+    onBackground = TextPrimary,
+    surface = CardBackground,
+    onSurface = TextPrimary,
+    surfaceVariant = Color(0xFF1E293B),
+    onSurfaceVariant = TextSecondary,
+    error = ErrorRed,
+    onError = TextPrimary
 )
 
 @Composable
@@ -40,10 +29,8 @@ fun MyApplicationTheme(
     dynamicColor: Boolean = false,
     content: @Composable () -> Unit
 ) {
-    val colorScheme = if (darkTheme) OledDarkColorScheme else LightColorScheme
-
     MaterialTheme(
-        colorScheme = colorScheme,
+        colorScheme = DarkColorScheme,
         typography = Typography,
         content = content
     )

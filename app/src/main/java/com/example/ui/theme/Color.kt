@@ -2,27 +2,24 @@ package com.example.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
-// Bento Grid Black Slate Palette
-val BentoBackground = Color(0xFF000000)
-val BentoSurface = Color(0xFF1B1B1F)
-val BentoSurfaceVariant = Color(0xFF2E2E32)
-val BentoTerminalBg = Color(0xFF0A0A0A)
-val BentoBorder = Color(0x1AFFFFFF)
+// Global Design Colors
+val AppBackground = Color(0xFF0B0F17)
+val CardBackground = Color(0xFF141C2C)
+val CardBorder = Color(0x2616D9FF) // Subtle cyan accent border
 
-// High-Tech Accent Colors
-val CyanAccent = Color(0xFF06B6D4)
-val NeonCyan = Color(0xFF38BDF8)
-val EmeraldGreen = Color(0xFF10B981)
-val BrightAmber = Color(0xFFF59E0B)
-val DangerRed = Color(0xFFEF4444)
+val AccentCyan = Color(0xFF16D9FF)
+val SuccessGreen = Color(0xFF22C55E)
+val WarningYellow = Color(0xFFFACC15)
+val ErrorRed = Color(0xFFEF4444)
 
-val TextMuted = Color(0xFF94A3B8)
-val TextBright = Color(0xFFE3E2E6)
+val TextPrimary = Color(0xFFF8FAFC)
+val TextSecondary = Color(0xFF94A3B8)
+val TextMutedColor = Color(0xFF64748B)
 
-// Legacy theme mapping
-val Purple80 = CyanAccent
-val PurpleGrey80 = NeonCyan
-val Pink80 = BrightAmber
-val Purple40 = CyanAccent
-val PurpleGrey40 = BentoBorder
-val Pink40 = DangerRed
+// Terminal specific colors
+val TerminalBg = Color(0xFF070A0F)
+val LogTimeColor = Color(0xFF64748B)
+val LogErrorColor = Color(0xFFEF4444)
+val LogWarnColor = Color(0xFFFACC15)
+val LogInfoColor = Color(0xFF38BDF8)
+val LogBootColor = Color(0xFF22C55E)

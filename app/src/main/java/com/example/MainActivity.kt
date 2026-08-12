@@ -80,7 +80,17 @@ import com.example.ui.screens.SettingsScreen
 import com.example.ui.screens.SmartParserScreen
 import com.example.ui.screens.TerminalScreen
 import com.example.ui.screens.UserGuideScreen
+import com.example.ui.theme.AccentCyan
+import com.example.ui.theme.AppBackground
+import com.example.ui.theme.CardBackground
+import com.example.ui.theme.CardBorder
+import com.example.ui.theme.ErrorRed
 import com.example.ui.theme.MyApplicationTheme
+import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.TextMutedColor
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.WarningYellow
 import com.example.ui.viewmodel.MainViewModel
 import kotlinx.coroutines.launch
 
@@ -92,18 +102,18 @@ enum class AppScreen(
     DASHBOARD("Home", Icons.Default.Dashboard, "Main"),
     TERMINAL("UART Terminal", Icons.Default.DeveloperBoard, "Main"),
     COMPARE("Log Compare", Icons.Default.Compare, "Main"),
-    AI_ASSISTANT("AI Repair Pro", Icons.Default.AutoAwesome, "Main"),
+    AI_ASSISTANT("AI Repair", Icons.Default.AutoAwesome, "Main"),
     
-    // Tools & Knowledge Base in Drawer
-    AI_BRAIN("AI Brain Studio", Icons.Default.Psychology, "Diagnostics"),
-    TIMELINE("Boot Timeline", Icons.Default.Timeline, "Diagnostics"),
-    DICTIONARY("UART Dictionary", Icons.Default.IntegrationInstructions, "Knowledge"),
-    LIBRARY("Good Log Reference", Icons.AutoMirrored.Filled.LibraryBooks, "Knowledge"),
+    // Advanced Tools
+    AI_BRAIN("Brain Studio", Icons.Default.Psychology, "Advanced Tools"),
+    TIMELINE("Boot Timeline", Icons.Default.Timeline, "Advanced Tools"),
+    DICTIONARY("UART Dictionary", Icons.Default.IntegrationInstructions, "Advanced Tools"),
+    LIBRARY("Good Log Database", Icons.AutoMirrored.Filled.LibraryBooks, "Advanced Tools"),
     
-    // System & Manual
-    USER_GUIDE("အသုံးပြုပုံ လမ်းညွှန်", Icons.AutoMirrored.Filled.MenuBook, "Help"),
+    // Settings & About
+    USER_GUIDE("User Manual", Icons.AutoMirrored.Filled.MenuBook, "System"),
     SETTINGS("Settings", Icons.Default.Settings, "System"),
-    ABOUT("About App", Icons.Default.Info, "System")
+    ABOUT("About", Icons.Default.Info, "System")
 }
 
 class MainActivity : ComponentActivity() {
@@ -133,10 +143,10 @@ fun MainAppScreen() {
         drawerState = drawerState,
         drawerContent = {
             ModalDrawerSheet(
-                drawerContainerColor = Color(0xFF121215),
-                drawerContentColor = Color.White,
+                drawerContainerColor = CardBackground,
+                drawerContentColor = TextPrimary,
                 modifier = Modifier
-                    .width(300.dp)
+                    .width(280.dp)
                     .fillMaxHeight()
                     .statusBarsPadding()
                     .navigationBarsPadding()
@@ -146,7 +156,7 @@ fun MainAppScreen() {
                     isSimulating = isSimulating
                 )
 
-                HorizontalDivider(color = Color(0x1AFFFFFF), modifier = Modifier.padding(vertical = 8.dp))
+                HorizontalDivider(color = CardBorder, modifier = Modifier.padding(vertical = 8.dp))
 
                 val drawerScrollState = rememberScrollState()
                 Column(
@@ -156,11 +166,12 @@ fun MainAppScreen() {
                         .verticalScroll(drawerScrollState),
                     verticalArrangement = Arrangement.spacedBy(4.dp)
                 ) {
+                    // MAIN SECTION
                     Text(
-                        text = "PRIMARY DIAGNOSTICS",
+                        text = "CORE DIAGNOSTICS",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF06B6D4),
+                        color = AccentCyan,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
 
@@ -175,13 +186,14 @@ fun MainAppScreen() {
                         )
                     }
 
-                    HorizontalDivider(color = Color(0x1AFFFFFF), modifier = Modifier.padding(vertical = 6.dp))
+                    HorizontalDivider(color = CardBorder, modifier = Modifier.padding(vertical = 6.dp))
 
+                    // ADVANCED TOOLS SECTION
                     Text(
-                        text = "AI & DIAGNOSTIC TOOLS",
+                        text = "ADVANCED TOOLS",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF8B5CF6),
+                        color = AccentCyan,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
 
@@ -196,13 +208,14 @@ fun MainAppScreen() {
                         )
                     }
 
-                    HorizontalDivider(color = Color(0x1AFFFFFF), modifier = Modifier.padding(vertical = 6.dp))
+                    HorizontalDivider(color = CardBorder, modifier = Modifier.padding(vertical = 6.dp))
 
+                    // SYSTEM & ABOUT SECTION
                     Text(
-                        text = "HELP & SYSTEM",
+                        text = "SETTINGS & INFO",
                         fontSize = 10.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color(0xFF10B981),
+                        color = TextMutedColor,
                         modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
                     )
 
@@ -224,7 +237,7 @@ fun MainAppScreen() {
     ) {
         Scaffold(
             modifier = Modifier.fillMaxSize(),
-            containerColor = Color(0xFF000000),
+            containerColor = AppBackground,
             topBar = {
                 TopAppBarWithDrawer(
                     currentScreen = currentScreen,
@@ -286,7 +299,7 @@ fun DrawerHeader(
             .fillMaxWidth()
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color(0xFF06B6D4).copy(alpha = 0.15f), Color(0xFF121215))
+                    colors = listOf(AccentCyan.copy(alpha = 0.12f), CardBackground)
                 )
             )
             .padding(16.dp)
@@ -296,13 +309,13 @@ fun DrawerHeader(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .background(Color(0xFF06B6D4)),
+                    .background(AccentCyan),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
                     imageVector = Icons.Default.Terminal,
                     contentDescription = null,
-                    tint = Color.Black,
+                    tint = AppBackground,
                     modifier = Modifier.size(24.dp)
                 )
             }
@@ -312,12 +325,12 @@ fun DrawerHeader(
                     text = "UART PRO AI",
                     fontSize = 18.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = TextPrimary
                 )
                 Text(
-                    text = "Boot Log Analyzer v3.5",
+                    text = "Motherboard Repair Tool",
                     fontSize = 11.sp,
-                    color = Color(0xFF94A3B8)
+                    color = TextSecondary
                 )
             }
         }
@@ -326,22 +339,22 @@ fun DrawerHeader(
 
         Box(
             modifier = Modifier
-                .clip(RoundedCornerShape(6.dp))
+                .clip(RoundedCornerShape(8.dp))
                 .background(
                     when {
-                        isConnected -> Color(0xFF10B981).copy(alpha = 0.2f)
-                        isSimulating -> Color(0xFF06B6D4).copy(alpha = 0.2f)
-                        else -> Color(0xFFEF4444).copy(alpha = 0.2f)
+                        isConnected -> SuccessGreen.copy(alpha = 0.15f)
+                        isSimulating -> WarningYellow.copy(alpha = 0.15f)
+                        else -> ErrorRed.copy(alpha = 0.15f)
                     }
                 )
                 .border(
                     1.dp,
                     when {
-                        isConnected -> Color(0xFF10B981)
-                        isSimulating -> Color(0xFF06B6D4)
-                        else -> Color(0xFFEF4444)
+                        isConnected -> SuccessGreen
+                        isSimulating -> WarningYellow
+                        else -> ErrorRed
                     },
-                    RoundedCornerShape(6.dp)
+                    RoundedCornerShape(8.dp)
                 )
                 .padding(horizontal = 10.dp, vertical = 4.dp)
         ) {
@@ -350,9 +363,9 @@ fun DrawerHeader(
                     imageVector = Icons.Default.Usb,
                     contentDescription = null,
                     tint = when {
-                        isConnected -> Color(0xFF10B981)
-                        isSimulating -> Color(0xFF06B6D4)
-                        else -> Color(0xFFEF4444)
+                        isConnected -> SuccessGreen
+                        isSimulating -> WarningYellow
+                        else -> ErrorRed
                     },
                     modifier = Modifier.size(14.dp)
                 )
@@ -366,9 +379,9 @@ fun DrawerHeader(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = when {
-                        isConnected -> Color(0xFF10B981)
-                        isSimulating -> Color(0xFF06B6D4)
-                        else -> Color(0xFFEF4444)
+                        isConnected -> SuccessGreen
+                        isSimulating -> WarningYellow
+                        else -> ErrorRed
                     }
                 )
             }
@@ -400,14 +413,14 @@ fun DrawerItem(
         selected = isSelected,
         onClick = onClick,
         colors = NavigationDrawerItemDefaults.colors(
-            selectedContainerColor = Color(0xFF06B6D4).copy(alpha = 0.2f),
-            selectedIconColor = Color(0xFF06B6D4),
-            selectedTextColor = Color(0xFF06B6D4),
+            selectedContainerColor = AccentCyan.copy(alpha = 0.15f),
+            selectedIconColor = AccentCyan,
+            selectedTextColor = AccentCyan,
             unselectedContainerColor = Color.Transparent,
-            unselectedIconColor = Color(0xFF94A3B8),
-            unselectedTextColor = Color(0xFFE2E8F0)
+            unselectedIconColor = TextSecondary,
+            unselectedTextColor = TextPrimary
         ),
-        shape = RoundedCornerShape(8.dp),
+        shape = RoundedCornerShape(10.dp),
         modifier = Modifier.height(44.dp)
     )
 }
@@ -423,8 +436,8 @@ fun TopAppBarWithDrawer(
         modifier = Modifier
             .fillMaxWidth()
             .statusBarsPadding()
-            .background(Color(0xFF121215))
-            .border(1.dp, Color(0x1AFFFFFF), RoundedCornerShape(0.dp))
+            .background(CardBackground)
+            .border(1.dp, CardBorder, RoundedCornerShape(0.dp))
             .padding(horizontal = 8.dp, vertical = 6.dp)
     ) {
         Row(
@@ -437,7 +450,7 @@ fun TopAppBarWithDrawer(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "Menu Drawer",
-                        tint = Color.White
+                        tint = TextPrimary
                     )
                 }
 
@@ -446,7 +459,7 @@ fun TopAppBarWithDrawer(
                 Icon(
                     imageVector = currentScreen.icon,
                     contentDescription = null,
-                    tint = Color(0xFF06B6D4),
+                    tint = AccentCyan,
                     modifier = Modifier.size(20.dp)
                 )
 
@@ -456,18 +469,18 @@ fun TopAppBarWithDrawer(
                     text = currentScreen.label,
                     fontSize = 15.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color.White
+                    color = TextPrimary
                 )
             }
 
             Box(
                 modifier = Modifier
-                    .clip(RoundedCornerShape(12.dp))
+                    .clip(RoundedCornerShape(8.dp))
                     .background(
                         when {
-                            isConnected -> Color(0xFF10B981).copy(alpha = 0.2f)
-                            isSimulating -> Color(0xFF06B6D4).copy(alpha = 0.2f)
-                            else -> Color(0xFF27272A)
+                            isConnected -> SuccessGreen.copy(alpha = 0.15f)
+                            isSimulating -> WarningYellow.copy(alpha = 0.15f)
+                            else -> CardBackground
                         }
                     )
                     .padding(horizontal = 8.dp, vertical = 4.dp)
@@ -481,9 +494,9 @@ fun TopAppBarWithDrawer(
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Bold,
                     color = when {
-                        isConnected -> Color(0xFF10B981)
-                        isSimulating -> Color(0xFF06B6D4)
-                        else -> Color(0xFF94A3B8)
+                        isConnected -> SuccessGreen
+                        isSimulating -> WarningYellow
+                        else -> TextMutedColor
                     }
                 )
             }
@@ -500,8 +513,8 @@ fun CompactBottomNavigationBar(
     Box(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(0xFF121215))
-            .border(1.dp, Color(0x1AFFFFFF), RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
+            .background(CardBackground)
+            .border(1.dp, CardBorder, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp))
             .navigationBarsPadding()
             .padding(vertical = 6.dp, horizontal = 12.dp)
     ) {
@@ -519,7 +532,7 @@ fun CompactBottomNavigationBar(
 
             primaryScreens.forEach { screen ->
                 val isSelected = currentScreen == screen
-                val tintColor = if (isSelected) Color(0xFF06B6D4) else Color(0xFF94A3B8)
+                val tintColor = if (isSelected) AccentCyan else TextSecondary
 
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally,
@@ -533,7 +546,7 @@ fun CompactBottomNavigationBar(
                         modifier = Modifier
                             .size(32.dp)
                             .clip(CircleShape)
-                            .background(if (isSelected) Color(0xFF06B6D4).copy(alpha = 0.2f) else Color.Transparent),
+                            .background(if (isSelected) AccentCyan.copy(alpha = 0.15f) else Color.Transparent),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
@@ -571,7 +584,7 @@ fun CompactBottomNavigationBar(
                     Icon(
                         imageVector = Icons.Default.Menu,
                         contentDescription = "More Menu",
-                        tint = Color(0xFF94A3B8),
+                        tint = TextSecondary,
                         modifier = Modifier.size(18.dp)
                     )
                 }
@@ -579,7 +592,7 @@ fun CompactBottomNavigationBar(
                     text = "More",
                     fontSize = 10.sp,
                     fontWeight = FontWeight.Normal,
-                    color = Color(0xFF94A3B8)
+                    color = TextSecondary
                 )
             }
         }

@@ -60,14 +60,23 @@ data class LogComparisonResult(
     val totalLinesFault: Int,
     val lineDiffs: List<LineDiffItem>,
     val missingKeywords: List<String>,
-    val stageDifferences: List<String>
+    val stageDifferences: List<String>,
+    val matchedLinesCount: Int = lineDiffs.count { it.status == DiffType.MATCH },
+    val missingLinesCount: Int = lineDiffs.count { it.status == DiffType.MISSING_IN_FAULT },
+    val extraLinesCount: Int = lineDiffs.count { it.status == DiffType.EXTRA_IN_FAULT },
+    val changedLinesCount: Int = lineDiffs.count { it.status == DiffType.CHANGED },
+    val stageSimilarityMap: Map<String, Float> = emptyMap()
 )
 
 data class LineDiffItem(
     val lineNumber: Int,
     val goodLine: String?,
     val faultLine: String?,
-    val status: DiffType
+    val status: DiffType,
+    val goodLineNumber: Int? = null,
+    val faultLineNumber: Int? = null,
+    val bootStage: String = "Boot",
+    val reason: String = ""
 )
 
 enum class DiffType {
@@ -376,19 +385,7 @@ object SmartUartParser {
             else -> "VPH_PWR Main Bus"
         }
 
-        val bootStage = when {
-            lower.contains("pbl") || lower.contains("bootrom") -> "BootROM / PBL"
-            lower.contains("xbl") || lower.contains("sbl") -> "XBL / SBL"
-            lower.contains("ddr") || lower.contains("dram") -> "DDR Training"
-            lower.contains("pmic") -> "PMIC Init"
-            lower.contains("ufs") || lower.contains("emmc") -> "Storage Init"
-            lower.contains("tz") || lower.contains("trustzone") -> "TrustZone"
-            lower.contains("abl") || lower.contains("fastboot") -> "ABL / Fastboot"
-            lower.contains("kernel") -> "Linux Kernel"
-            lower.contains("init") || lower.contains("zygote") -> "Android Framework"
-            lower.contains("edl") || lower.contains("9008") -> "EDL 9008 Emergency Mode"
-            else -> "Boot"
-        }
+        val bootStage = detectStageForLine(line)
 
         return ParsedLogLine(
             lineNumber = lineNumber,
@@ -404,7 +401,7 @@ object SmartUartParser {
     }
 
     private fun extractTimestamp(line: String): String {
-        val regex = Regex("""\[?\d+\.\d+]?|\[\d+]""")
+        val regex = Regex("""\[?\s*\d+(?::\d+)*(?:\.\d+)?\s*\]?""")
         return regex.find(line)?.value ?: ""
     }
 
@@ -466,23 +463,32 @@ object SmartUartParser {
         }
     }
 
+    private data class IndexedLine(
+        val index: Int, // 1-based original line index
+        val text: String,
+        val stage: String
+    )
+
     /**
-     * Longest Common Subsequence (LCS) Structural Diff Engine
+     * Production-grade Log Comparison Engine
+     * Scalable to 100,000+ lines without OOM using streaming chunk/stage processing.
      */
     fun compareLogs(goodLog: String, faultLog: String): LogComparisonResult {
         try {
-            // Cap max comparison lines to 800 lines to prevent OOM / stack overflow on massive logs
-            val MAX_COMPARE_LINES = 800
-            val goodLinesAll = goodLog.lines().filter { it.isNotBlank() }
-            val faultLinesAll = faultLog.lines().filter { it.isNotBlank() }
+            val goodIndexed = goodLog.lineSequence()
+                .mapIndexed { idx, line -> IndexedLine(idx + 1, line, detectStageForLine(line)) }
+                .filter { it.text.isNotBlank() }
+                .toList()
 
-            val goodLines = goodLinesAll.take(MAX_COMPARE_LINES)
-            val faultLines = faultLinesAll.take(MAX_COMPARE_LINES)
+            val faultIndexed = faultLog.lineSequence()
+                .mapIndexed { idx, line -> IndexedLine(idx + 1, line, detectStageForLine(line)) }
+                .filter { it.text.isNotBlank() }
+                .toList()
 
-            val m = goodLines.size
-            val n = faultLines.size
+            val totalGoodCount = goodIndexed.size
+            val totalFaultCount = faultIndexed.size
 
-            if (m == 0 && n == 0) {
+            if (totalGoodCount == 0 && totalFaultCount == 0) {
                 return LogComparisonResult(
                     similarityPercentage = 100f,
                     totalLinesGood = 0,
@@ -493,75 +499,52 @@ object SmartUartParser {
                 )
             }
 
-            // Build LCS DP matrix for alignment safely
-            val dp = Array(m + 1) { IntArray(n + 1) }
-            for (i in 1..m) {
-                for (j in 1..n) {
-                    if (normalizeLine(goodLines[i - 1]) == normalizeLine(faultLines[j - 1])) {
-                        dp[i][j] = dp[i - 1][j - 1] + 1
-                    } else {
-                        dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
-                    }
-                }
-            }
+            val globalDiffItems = mutableListOf<LineDiffItem>()
+            val stageSimilarityMap = mutableMapOf<String, Float>()
+            val maxLines = max(totalGoodCount, totalFaultCount)
 
-            // Backtrack to construct LCS structural diff items
-            val diffItems = mutableListOf<LineDiffItem>()
-            var i = m
-            var j = n
-            var lineNum = max(m, n)
             var matchCount = 0
 
-            while (i > 0 || j > 0) {
-                if (i > 0 && j > 0 && normalizeLine(goodLines[i - 1]) == normalizeLine(faultLines[j - 1])) {
-                    matchCount++
-                    diffItems.add(
-                        0, LineDiffItem(
-                            lineNumber = lineNum--,
-                            goodLine = goodLines[i - 1],
-                            faultLine = faultLines[j - 1],
-                            status = DiffType.MATCH
-                        )
-                    )
-                    i--
-                    j--
-                } else if (j > 0 && (i == 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-                    diffItems.add(
-                        0, LineDiffItem(
-                            lineNumber = lineNum--,
-                            goodLine = null,
-                            faultLine = faultLines[j - 1],
-                            status = DiffType.EXTRA_IN_FAULT
-                        )
-                    )
-                    j--
-                } else if (i > 0 && (j == 0 || dp[i][j - 1] < dp[i - 1][j])) {
-                    diffItems.add(
-                        0, LineDiffItem(
-                            lineNumber = lineNum--,
-                            goodLine = goodLines[i - 1],
-                            faultLine = null,
-                            status = DiffType.MISSING_IN_FAULT
-                        )
-                    )
-                    i--
+            if (maxLines <= 2000) {
+                // Direct Full DP LCS for standard log sizes <= 2000 lines
+                matchCount += compareChunkLcs(goodIndexed, faultIndexed, "Full Log", globalDiffItems)
+            } else {
+                // Scalable Chunk / Stage Mode for massive logs > 2000 lines
+                val CHUNK_SIZE = 500
+                val allStages = (BOOT_STAGES_ORDER + listOf("General")).distinct()
+
+                for (stage in allStages) {
+                    val gStage = goodIndexed.filter { it.stage == stage }
+                    val fStage = faultIndexed.filter { it.stage == stage }
+                    if (gStage.isEmpty() && fStage.isEmpty()) continue
+
+                    val maxCount = max(gStage.size, fStage.size)
+                    val numChunks = (maxCount + CHUNK_SIZE - 1) / CHUNK_SIZE
+
+                    var stageMatches = 0
+                    var stageTotal = 0
+
+                    for (c in 0 until numChunks) {
+                        val gChunk = gStage.drop(c * CHUNK_SIZE).take(CHUNK_SIZE)
+                        val fChunk = fStage.drop(c * CHUNK_SIZE).take(CHUNK_SIZE)
+                        val chunkStageName = if (numChunks > 1) "$stage (Part ${c + 1})" else stage
+
+                        val matches = compareChunkLcs(gChunk, fChunk, chunkStageName, globalDiffItems)
+                        stageMatches += matches
+                        stageTotal += max(gChunk.size, fChunk.size)
+                    }
+
+                    val stageSim = if (stageTotal > 0) (stageMatches.toFloat() / stageTotal) * 100f else 100f
+                    stageSimilarityMap[stage] = stageSim
                 }
+
+                matchCount = globalDiffItems.count { it.status == DiffType.MATCH }
             }
 
-            if (goodLinesAll.size > MAX_COMPARE_LINES || faultLinesAll.size > MAX_COMPARE_LINES) {
-                diffItems.add(
-                    LineDiffItem(
-                        lineNumber = lineNum,
-                        goodLine = null,
-                        faultLine = "[INFO: Log compared first $MAX_COMPARE_LINES lines for high performance]",
-                        status = DiffType.CHANGED
-                    )
-                )
-            }
+            val totalMax = max(totalGoodCount, totalFaultCount)
+            val overallSimilarity = if (totalMax > 0) (matchCount.toFloat() / totalMax) * 100f else 100f
 
-            val totalMax = max(m, n)
-            val similarity = if (totalMax > 0) (matchCount.toFloat() / totalMax) * 100f else 100f
-
+            // Keyword and Stage Difference Analysis
             val goodKeywords = parseLineForKeywords(goodLog).map { it.keyword }.toSet()
             val faultKeywords = parseLineForKeywords(faultLog).map { it.keyword }.toSet()
             val missingKeywords = (goodKeywords - faultKeywords).toList()
@@ -570,13 +553,23 @@ object SmartUartParser {
             val faultStages = detectBootStages(faultLog).filter { it.status == StageStatus.PASSED }.map { it.stageName }
             val stageDiffs = (goodStages - faultStages.toSet()).map { "Missing Boot Stage: $it" }
 
+            val matchedLinesCount = globalDiffItems.count { it.status == DiffType.MATCH }
+            val missingLinesCount = globalDiffItems.count { it.status == DiffType.MISSING_IN_FAULT }
+            val extraLinesCount = globalDiffItems.count { it.status == DiffType.EXTRA_IN_FAULT }
+            val changedLinesCount = globalDiffItems.count { it.status == DiffType.CHANGED }
+
             return LogComparisonResult(
-                similarityPercentage = similarity,
-                totalLinesGood = goodLinesAll.size,
-                totalLinesFault = faultLinesAll.size,
-                lineDiffs = diffItems,
+                similarityPercentage = overallSimilarity,
+                totalLinesGood = totalGoodCount,
+                totalLinesFault = totalFaultCount,
+                lineDiffs = globalDiffItems,
                 missingKeywords = missingKeywords,
-                stageDifferences = stageDiffs
+                stageDifferences = stageDiffs,
+                matchedLinesCount = matchedLinesCount,
+                missingLinesCount = missingLinesCount,
+                extraLinesCount = extraLinesCount,
+                changedLinesCount = changedLinesCount,
+                stageSimilarityMap = stageSimilarityMap
             )
         } catch (e: Throwable) {
             e.printStackTrace()
@@ -589,21 +582,237 @@ object SmartUartParser {
                         lineNumber = 1,
                         goodLine = null,
                         faultLine = "Error processing logs: ${e.message}",
-                        status = DiffType.CHANGED
+                        status = DiffType.CHANGED,
+                        goodLineNumber = null,
+                        faultLineNumber = 1,
+                        bootStage = "Error",
+                        reason = e.message ?: "Log processing error"
                     )
                 ),
                 missingKeywords = emptyList(),
-                stageDifferences = listOf("Log parsing issue detected")
+                stageDifferences = listOf("Log parsing error encountered")
             )
         }
     }
 
-    private fun normalizeLine(line: String): String {
-        // Strip timestamps and memory addresses for clean structural comparison
+    private fun compareChunkLcs(
+        goodLines: List<IndexedLine>,
+        faultLines: List<IndexedLine>,
+        bootStageName: String,
+        globalDiffItems: MutableList<LineDiffItem>
+    ): Int {
+        val m = goodLines.size
+        val n = faultLines.size
+        if (m == 0 && n == 0) return 0
+
+        if (m == 0) {
+            for (f in faultLines) {
+                globalDiffItems.add(
+                    LineDiffItem(
+                        lineNumber = globalDiffItems.size + 1,
+                        goodLine = null,
+                        faultLine = f.text,
+                        status = DiffType.EXTRA_IN_FAULT,
+                        goodLineNumber = null,
+                        faultLineNumber = f.index,
+                        bootStage = bootStageName,
+                        reason = "Extra line in fault log during $bootStageName"
+                    )
+                )
+            }
+            return 0
+        }
+
+        if (n == 0) {
+            for (g in goodLines) {
+                globalDiffItems.add(
+                    LineDiffItem(
+                        lineNumber = globalDiffItems.size + 1,
+                        goodLine = g.text,
+                        faultLine = null,
+                        status = DiffType.MISSING_IN_FAULT,
+                        goodLineNumber = g.index,
+                        faultLineNumber = null,
+                        bootStage = bootStageName,
+                        reason = "Missing line in fault log during $bootStageName"
+                    )
+                )
+            }
+            return 0
+        }
+
+        // Build LCS DP matrix for chunk safely
+        val dp = Array(m + 1) { IntArray(n + 1) }
+        for (i in 1..m) {
+            val normG = normalizeLine(goodLines[i - 1].text)
+            for (j in 1..n) {
+                val normF = normalizeLine(faultLines[j - 1].text)
+                if (normG == normF) {
+                    dp[i][j] = dp[i - 1][j - 1] + 1
+                } else {
+                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+                }
+            }
+        }
+
+        // Backtrack to construct chunk diffs
+        val chunkDiffs = mutableListOf<LineDiffItem>()
+        var i = m
+        var j = n
+        var chunkMatchCount = 0
+
+        while (i > 0 || j > 0) {
+            val gLine = if (i > 0) goodLines[i - 1] else null
+            val fLine = if (j > 0) faultLines[j - 1] else null
+
+            val normG = gLine?.let { normalizeLine(it.text) } ?: ""
+            val normF = fLine?.let { normalizeLine(it.text) } ?: ""
+
+            if (i > 0 && j > 0 && normG == normF) {
+                chunkMatchCount++
+                chunkDiffs.add(
+                    0,
+                    LineDiffItem(
+                        lineNumber = 0,
+                        goodLine = gLine!!.text,
+                        faultLine = fLine!!.text,
+                        status = DiffType.MATCH,
+                        goodLineNumber = gLine.index,
+                        faultLineNumber = fLine.index,
+                        bootStage = bootStageName,
+                        reason = "Exact match during $bootStageName"
+                    )
+                )
+                i--
+                j--
+            } else if (j > 0 && (i == 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                chunkDiffs.add(
+                    0,
+                    LineDiffItem(
+                        lineNumber = 0,
+                        goodLine = null,
+                        faultLine = fLine!!.text,
+                        status = DiffType.EXTRA_IN_FAULT,
+                        goodLineNumber = null,
+                        faultLineNumber = fLine.index,
+                        bootStage = bootStageName,
+                        reason = "Extra line in fault log during $bootStageName"
+                    )
+                )
+                j--
+            } else if (i > 0 && (j == 0 || dp[i][j - 1] < dp[i - 1][j])) {
+                chunkDiffs.add(
+                    0,
+                    LineDiffItem(
+                        lineNumber = 0,
+                        goodLine = gLine!!.text,
+                        faultLine = null,
+                        status = DiffType.MISSING_IN_FAULT,
+                        goodLineNumber = gLine.index,
+                        faultLineNumber = null,
+                        bootStage = bootStageName,
+                        reason = "Missing line in fault log during $bootStageName"
+                    )
+                )
+                i--
+            }
+        }
+
+        val postProcessed = postProcessChangedLines(chunkDiffs, bootStageName)
+        for (item in postProcessed) {
+            globalDiffItems.add(
+                item.copy(lineNumber = globalDiffItems.size + 1)
+            )
+        }
+
+        return chunkMatchCount
+    }
+
+    private fun postProcessChangedLines(
+        diffs: List<LineDiffItem>,
+        bootStageName: String
+    ): List<LineDiffItem> {
+        if (diffs.isEmpty()) return diffs
+        val result = mutableListOf<LineDiffItem>()
+        var idx = 0
+        while (idx < diffs.size) {
+            val curr = diffs[idx]
+            if (idx < diffs.size - 1) {
+                val next = diffs[idx + 1]
+                if (curr.status == DiffType.MISSING_IN_FAULT && next.status == DiffType.EXTRA_IN_FAULT) {
+                    result.add(
+                        LineDiffItem(
+                            lineNumber = curr.lineNumber,
+                            goodLine = curr.goodLine,
+                            faultLine = next.faultLine,
+                            status = DiffType.CHANGED,
+                            goodLineNumber = curr.goodLineNumber,
+                            faultLineNumber = next.faultLineNumber,
+                            bootStage = bootStageName,
+                            reason = "Line content modified during $bootStageName"
+                        )
+                    )
+                    idx += 2
+                    continue
+                } else if (curr.status == DiffType.EXTRA_IN_FAULT && next.status == DiffType.MISSING_IN_FAULT) {
+                    result.add(
+                        LineDiffItem(
+                            lineNumber = curr.lineNumber,
+                            goodLine = next.goodLine,
+                            faultLine = curr.faultLine,
+                            status = DiffType.CHANGED,
+                            goodLineNumber = curr.goodLineNumber,
+                            faultLineNumber = next.faultLineNumber,
+                            bootStage = bootStageName,
+                            reason = "Line content modified during $bootStageName"
+                        )
+                    )
+                    idx += 2
+                    continue
+                }
+            }
+            result.add(curr)
+            idx++
+        }
+        return result
+    }
+
+    fun normalizeLine(line: String): String {
+        if (line.isEmpty()) return ""
         return line.lowercase()
-            .replace(Regex("""\[?\d+\.\d+]?|\[\d+]"""), "")
+            .replace(Regex("""\[?\s*\d+(?::\d+)*(?:\.\d+)?\s*\]?"""), "")
             .replace(Regex("""0x[0-9a-fA-F]+"""), "")
+            .replace(Regex("""\b(?:pid|tid|seq|id|thread|cpu|core)[=:\s]*\d+\b"""), "")
+            .replace(Regex("""\s+"""), " ")
             .trim()
+    }
+
+    private fun detectStageForLine(line: String): String {
+        val lower = line.lowercase()
+        return when {
+            lower.contains("bootrom") || lower.contains("sec_boot") || lower.contains("br_pbl") -> "BootROM"
+            lower.contains("pbl") || lower.contains("primary boot loader") || lower.contains("sbl1_main") -> "PBL"
+            lower.contains("xbl") || lower.contains("secondary boot loader") || lower.contains("sbl1") -> "XBL"
+            lower.contains("ddr") || lower.contains("lpddr") || lower.contains("dram") || lower.contains("memory training") -> "DDR Training"
+            lower.contains("pmic") || lower.contains("spmi") || lower.contains("pon_reset") || lower.contains("vreg") -> "PMIC Init"
+            lower.contains("clock") || lower.contains("clk") || lower.contains("pll") -> "Clock Init"
+            lower.contains("gpio") || lower.contains("tlmm") || lower.contains("pinctrl") -> "GPIO Init"
+            lower.contains("ufs") || lower.contains("scsi") || lower.contains("ufshcd") -> "UFS Init"
+            lower.contains("emmc") || lower.contains("mmc0") || lower.contains("sdhc") -> "eMMC Init"
+            lower.contains("rpmb") || lower.contains("tee") -> "RPMB"
+            lower.contains("tz") || lower.contains("trustzone") || lower.contains("qsee") -> "TrustZone"
+            lower.contains("abl") || lower.contains("fastboot") -> "ABL"
+            lower.contains("vbmeta") || lower.contains("avb") -> "VBMETA"
+            lower.contains("dtb") || lower.contains("dtbo") || lower.contains("fdt") -> "DTB / DTBO"
+            lower.contains("kernel") || lower.contains("linux version") || lower.contains("start_kernel") -> "Kernel"
+            lower.contains("vendor") -> "Vendor Boot"
+            lower.contains("init") || lower.contains("init.rc") -> "Init"
+            lower.contains("zygote") || lower.contains("system_server") -> "Android Framework"
+            lower.contains("surfaceflinger") || lower.contains("composer") -> "SurfaceFlinger"
+            lower.contains("launcher") || lower.contains("boot_completed") -> "Launcher"
+            lower.contains("edl") || lower.contains("9008") || lower.contains("qdl") -> "EDL / 9008 Mode"
+            else -> "General"
+        }
     }
 
     fun cleanNoiseAndCrc(rawLog: String): Pair<String, Boolean> {

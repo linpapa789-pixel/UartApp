@@ -25,18 +25,26 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.data.parser.StageStatus
+import com.example.ui.theme.AccentCyan
+import com.example.ui.theme.CardBackground
+import com.example.ui.theme.CardBorder
+import com.example.ui.theme.ErrorRed
+import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.TextMutedColor
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.WarningYellow
 
 @Composable
 fun GlassCard(
     modifier: Modifier = Modifier,
-    borderColor: Color = Color(0xFF334155),
+    borderColor: Color = CardBorder,
     onClick: (() -> Unit)? = null,
     content: @Composable () -> Unit
 ) {
@@ -44,18 +52,13 @@ fun GlassCard(
         modifier = modifier
             .border(
                 width = 1.dp,
-                brush = Brush.linearGradient(
-                    colors = listOf(
-                        borderColor.copy(alpha = 0.6f),
-                        borderColor.copy(alpha = 0.15f)
-                    )
-                ),
+                color = borderColor,
                 shape = RoundedCornerShape(16.dp)
             )
             .then(if (onClick != null) Modifier.clickable { onClick() } else Modifier),
         shape = RoundedCornerShape(16.dp),
         colors = CardDefaults.cardColors(
-            containerColor = Color(0xFF0F172A).copy(alpha = 0.85f)
+            containerColor = CardBackground
         ),
         elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
     ) {
@@ -70,12 +73,12 @@ fun MetricCard(
     title: String,
     value: String,
     icon: ImageVector,
-    accentColor: Color,
+    accentColor: Color = AccentCyan,
     modifier: Modifier = Modifier
 ) {
     GlassCard(
         modifier = modifier,
-        borderColor = accentColor
+        borderColor = accentColor.copy(alpha = 0.3f)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -91,7 +94,7 @@ fun MetricCard(
                     imageVector = icon,
                     contentDescription = null,
                     tint = accentColor,
-                    modifier = Modifier.size(24.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
             Spacer(modifier = Modifier.width(12.dp))
@@ -99,13 +102,15 @@ fun MetricCard(
                 Text(
                     text = title,
                     style = MaterialTheme.typography.bodySmall,
-                    color = Color(0xFF94A3B8)
+                    color = TextSecondary,
+                    fontSize = 11.sp
                 )
                 Text(
                     text = value,
                     style = MaterialTheme.typography.titleLarge,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFF8FAFC)
+                    color = TextPrimary,
+                    fontSize = 18.sp
                 )
             }
         }
@@ -115,10 +120,10 @@ fun MetricCard(
 @Composable
 fun StatusBadge(status: String, modifier: Modifier = Modifier) {
     val (bgColor, textColor) = when (status.uppercase()) {
-        "GOOD", "SOLVED", "PASSED" -> Pair(Color(0xFF00F5A0).copy(alpha = 0.2f), Color(0xFF00F5A0))
-        "FAULT", "FAILED" -> Pair(Color(0xFFFF2A6D).copy(alpha = 0.2f), Color(0xFFFF2A6D))
-        "WARNING" -> Pair(Color(0xFFFFB800).copy(alpha = 0.2f), Color(0xFFFFB800))
-        else -> Pair(Color(0xFF38BDF8).copy(alpha = 0.2f), Color(0xFF38BDF8))
+        "GOOD", "SOLVED", "PASSED", "ONLINE", "READY" -> Pair(SuccessGreen.copy(alpha = 0.15f), SuccessGreen)
+        "FAULT", "FAILED", "ERROR", "DISCONNECTED" -> Pair(ErrorRed.copy(alpha = 0.15f), ErrorRed)
+        "WARNING", "PENDING", "SIM" -> Pair(WarningYellow.copy(alpha = 0.15f), WarningYellow)
+        else -> Pair(AccentCyan.copy(alpha = 0.15f), AccentCyan)
     }
 
     Box(
@@ -130,7 +135,7 @@ fun StatusBadge(status: String, modifier: Modifier = Modifier) {
     ) {
         Text(
             text = status.uppercase(),
-            fontSize = 11.sp,
+            fontSize = 10.sp,
             fontWeight = FontWeight.Bold,
             color = textColor
         )
@@ -141,19 +146,19 @@ fun StatusBadge(status: String, modifier: Modifier = Modifier) {
 fun StageStatusDot(status: StageStatus) {
     val color by animateColorAsState(
         targetValue = when (status) {
-            StageStatus.PASSED -> Color(0xFF00F5A0)
-            StageStatus.WARNING -> Color(0xFFFFB800)
-            StageStatus.FAILED -> Color(0xFFFF2A6D)
-            StageStatus.NOT_REACHED -> Color(0xFF475569)
+            StageStatus.PASSED -> SuccessGreen
+            StageStatus.WARNING -> WarningYellow
+            StageStatus.FAILED -> ErrorRed
+            StageStatus.NOT_REACHED -> TextMutedColor
         },
         label = "StageStatusDot"
     )
 
     Box(
         modifier = Modifier
-            .size(12.dp)
+            .size(10.dp)
             .clip(CircleShape)
             .background(color)
-            .border(2.dp, color.copy(alpha = 0.4f), CircleShape)
+            .border(1.dp, color.copy(alpha = 0.4f), CircleShape)
     )
 }

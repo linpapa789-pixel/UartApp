@@ -105,7 +105,7 @@ class GeminiAiService {
 
             val requestBody = jsonPayload.toString().toRequestBody("application/json".toMediaType())
             val request = Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey")
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey")
                 .post(requestBody)
                 .build()
 
@@ -123,6 +123,13 @@ class GeminiAiService {
                         return@withContext partsArr.getJSONObject(0).optString("text", fallbackOfflineAnalysis(logText, matchedRules))
                     }
                 }
+            } else if (responseBodyStr.isNotBlank()) {
+                try {
+                    val jsonResp = JSONObject(responseBodyStr)
+                    val errObj = jsonResp.optJSONObject("error")
+                    val errMsg = errObj?.optString("message") ?: "HTTP ${response.code}"
+                    return@withContext "⚠️ Gemini API Error (${response.code}): $errMsg\n\nFallback Analysis:\n" + fallbackOfflineAnalysis(logText, matchedRules)
+                } catch (_: Exception) {}
             }
             fallbackOfflineAnalysis(logText, matchedRules)
         } catch (e: Exception) {
@@ -163,7 +170,7 @@ class GeminiAiService {
 
             val requestBody = jsonPayload.toString().toRequestBody("application/json".toMediaType())
             val request = Request.Builder()
-                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=$apiKey")
+                .url("https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=$apiKey")
                 .post(requestBody)
                 .build()
 

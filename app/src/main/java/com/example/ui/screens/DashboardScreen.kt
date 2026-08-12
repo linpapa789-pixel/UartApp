@@ -14,29 +14,26 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Build
+import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.filled.CheckCircle
+import androidx.compose.material.icons.filled.Compare
 import androidx.compose.material.icons.filled.DeveloperBoard
-import androidx.compose.material.icons.filled.Memory
+import androidx.compose.material.icons.filled.LibraryBooks
 import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.filled.PrecisionManufacturing
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Terminal
-import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
@@ -45,6 +42,13 @@ import com.example.data.usb.SimulationDeviceType
 import com.example.ui.components.GlassCard
 import com.example.ui.components.MetricCard
 import com.example.ui.components.StatusBadge
+import com.example.ui.theme.AccentCyan
+import com.example.ui.theme.AppBackground
+import com.example.ui.theme.CardBackground
+import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.TextMutedColor
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
 import com.example.ui.viewmodel.MainViewModel
 
 @Composable
@@ -56,24 +60,26 @@ fun DashboardScreen(
 ) {
     val savedSessions by viewModel.savedSessions.collectAsState()
     val repairCases by viewModel.repairCases.collectAsState()
+    val goodLogs by viewModel.goodLogLibrary.collectAsState()
     val connectionState by viewModel.connectionState.collectAsState()
 
     val solvedCount = repairCases.count { it.isSolved }
     val totalSessions = savedSessions.size
+    val goodLogsCount = goodLogs.size
 
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF020617))
+            .background(AppBackground)
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        // Hero Header Banner
+        // TOP CARD: UART PRO AI, Connection Status, Baud Rate, Action Buttons
         item {
             GlassCard(
-                borderColor = Color(0xFF00F0FF)
+                borderColor = AccentCyan.copy(alpha = 0.5f)
             ) {
-                Column {
+                Column(verticalArrangement = Arrangement.spacedBy(12.dp)) {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -84,137 +90,212 @@ fun DashboardScreen(
                                 text = "UART PRO AI",
                                 fontSize = 22.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF00F0FF)
+                                color = AccentCyan
                             )
                             Text(
-                                text = "Professional Mobile Boot Log Analyzer",
-                                fontSize = 12.sp,
-                                color = Color(0xFF94A3B8)
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .clip(CircleShape)
-                                .background(
-                                    if (connectionState.isConnected) Color(0xFF00F5A0).copy(alpha = 0.2f)
-                                    else Color(0xFFFF2A6D).copy(alpha = 0.2f)
-                                )
-                                .padding(horizontal = 10.dp, vertical = 6.dp)
-                        ) {
-                            Text(
-                                text = if (connectionState.isConnected) "ONLINE 115200" else "READY / SIM",
+                                text = "Motherboard Boot Log Diagnostics Engine",
                                 fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = if (connectionState.isConnected) Color(0xFF00F5A0) else Color(0xFFFF2A6D)
+                                color = TextSecondary
                             )
                         }
+
+                        StatusBadge(
+                            status = if (connectionState.isConnected) "ONLINE" else if (connectionState.isSimulationActive) "SIMULATION" else "DISCONNECTED"
+                        )
                     }
 
-                    Spacer(modifier = Modifier.height(16.dp))
-
-                    Text(
-                        text = "🇲🇲 မြန်မာဖုန်းပြင်ဆရာများအတွက် အဆင့်မြင့် မိုဘိုင်း Motherboard UART သုံးသပ်နည်းပညာစနစ်",
-                        fontSize = 13.sp,
-                        color = Color(0xFFE2E8F0)
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        horizontalArrangement = Arrangement.spacedBy(6.dp)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Default.Speed,
+                            contentDescription = "Baud Rate",
+                            tint = AccentCyan,
+                            modifier = Modifier.size(16.dp)
+                        )
+                        Text(
+                            text = "Current Baud Rate: 115200 8N1",
+                            fontSize = 12.sp,
+                            color = TextPrimary,
+                            fontWeight = FontWeight.Medium
+                        )
+                    }
 
                     Row(
+                        modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.spacedBy(10.dp)
                     ) {
                         Button(
                             onClick = {
-                                viewModel.startUsbSimulation(SimulationDeviceType.QUALCOMM_SNAPDRAGON_FAULT)
+                                if (!connectionState.isConnected && !connectionState.isSimulationActive) {
+                                    viewModel.startUsbSimulation(SimulationDeviceType.QUALCOMM_SNAPDRAGON_FAULT)
+                                }
                                 onNavigateToTerminal()
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF00F0FF)),
-                            shape = RoundedCornerShape(10.dp)
+                            colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
+                            shape = RoundedCornerShape(12.dp),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Icon(Icons.Default.PlayArrow, contentDescription = null, tint = Color.Black)
+                            Icon(
+                                imageVector = Icons.Default.PlayArrow,
+                                contentDescription = null,
+                                tint = AppBackground,
+                                modifier = Modifier.size(18.dp)
+                            )
                             Spacer(modifier = Modifier.width(6.dp))
-                            Text("Start Qualcomm Log", color = Color.Black, fontWeight = FontWeight.Bold)
+                            Text(
+                                text = "Start UART",
+                                color = AppBackground,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
                         }
 
-                        Button(
+                        OutlinedButton(
                             onClick = onNavigateToAi,
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF1E293B)),
-                            shape = RoundedCornerShape(10.dp)
+                            shape = RoundedCornerShape(12.dp),
+                            colors = ButtonDefaults.outlinedButtonColors(
+                                containerColor = CardBackground,
+                                contentColor = AccentCyan
+                            ),
+                            border = androidx.compose.foundation.BorderStroke(1.dp, AccentCyan.copy(alpha = 0.5f)),
+                            modifier = Modifier.weight(1f)
                         ) {
-                            Text("AI Repair Assistant", color = Color(0xFF38BDF8))
+                            Icon(
+                                imageVector = Icons.Default.AutoAwesome,
+                                contentDescription = null,
+                                tint = AccentCyan,
+                                modifier = Modifier.size(18.dp)
+                            )
+                            Spacer(modifier = Modifier.width(6.dp))
+                            Text(
+                                text = "AI Assistant",
+                                color = AccentCyan,
+                                fontWeight = FontWeight.Bold,
+                                fontSize = 13.sp
+                            )
                         }
                     }
                 }
             }
         }
 
-        // Metrics Row
+        // TWO LARGE CARDS BELOW: UART Terminal & Log Compare
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
-                MetricCard(
-                    title = "Total Sessions",
-                    value = "$totalSessions",
-                    icon = Icons.Default.Terminal,
-                    accentColor = Color(0xFF00F0FF),
-                    modifier = Modifier.weight(1f)
-                )
+                GlassCard(
+                    modifier = Modifier.weight(1f),
+                    borderColor = AccentCyan.copy(alpha = 0.4f),
+                    onClick = onNavigateToTerminal
+                ) {
+                    Column(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(AccentCyan.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.DeveloperBoard,
+                                contentDescription = "Terminal",
+                                tint = AccentCyan,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "UART Terminal",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Live Serial Data Stream & Capture",
+                            fontSize = 11.sp,
+                            color = TextSecondary
+                        )
+                    }
+                }
+
+                GlassCard(
+                    modifier = Modifier.weight(1f),
+                    borderColor = AccentCyan.copy(alpha = 0.4f),
+                    onClick = onNavigateToCompare
+                ) {
+                    Column(
+                        modifier = Modifier.padding(vertical = 8.dp),
+                        horizontalAlignment = Alignment.Start
+                    ) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .background(AccentCyan.copy(alpha = 0.15f), RoundedCornerShape(10.dp)),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Compare,
+                                contentDescription = "Log Compare",
+                                tint = AccentCyan,
+                                modifier = Modifier.size(24.dp)
+                            )
+                        }
+                        Spacer(modifier = Modifier.height(12.dp))
+                        Text(
+                            text = "Log Compare",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = TextPrimary
+                        )
+                        Spacer(modifier = Modifier.height(4.dp))
+                        Text(
+                            text = "Good vs Bad LCS Diff Engine",
+                            fontSize = 11.sp,
+                            color = TextSecondary
+                        )
+                    }
+                }
+            }
+        }
+
+        // STATISTICS CARDS
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+            ) {
                 MetricCard(
                     title = "Solved Cases",
                     value = "$solvedCount",
                     icon = Icons.Default.CheckCircle,
-                    accentColor = Color(0xFF00F5A0),
+                    accentColor = SuccessGreen,
+                    modifier = Modifier.weight(1f)
+                )
+                MetricCard(
+                    title = "Sessions",
+                    value = "$totalSessions",
+                    icon = Icons.Default.Terminal,
+                    accentColor = AccentCyan,
+                    modifier = Modifier.weight(1f)
+                )
+                MetricCard(
+                    title = "Good Logs",
+                    value = "$goodLogsCount",
+                    icon = Icons.Default.LibraryBooks,
+                    accentColor = AccentCyan,
                     modifier = Modifier.weight(1f)
                 )
             }
         }
 
-        // Quick Launch Actions
-        item {
-            Text(
-                text = "Diagnostic Modules",
-                fontSize = 16.sp,
-                fontWeight = FontWeight.Bold,
-                color = Color(0xFFF8FAFC)
-            )
-        }
-
-        item {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(12.dp)
-            ) {
-                GlassCard(
-                    modifier = Modifier.weight(1f),
-                    borderColor = Color(0xFF38BDF8),
-                    onClick = onNavigateToTerminal
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.DeveloperBoard, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(32.dp))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("UART Terminal", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("Live USB / Baud", fontSize = 10.sp, color = Color(0xFF94A3B8))
-                    }
-                }
-
-                GlassCard(
-                    modifier = Modifier.weight(1f),
-                    borderColor = Color(0xFFFFB800),
-                    onClick = onNavigateToCompare
-                ) {
-                    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                        Icon(Icons.Default.Memory, contentDescription = null, tint = Color(0xFFFFB800), modifier = Modifier.size(32.dp))
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text("Log Compare", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("Good vs Bad Diff", fontSize = 10.sp, color = Color(0xFF94A3B8))
-                    }
-                }
-            }
-        }
-
-        // Recent Repair Cases Section
+        // RECENT REPAIR DATABASE SECTION (Below statistics cards)
         item {
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -225,7 +306,12 @@ fun DashboardScreen(
                     text = "Recent Repair Database",
                     fontSize = 16.sp,
                     fontWeight = FontWeight.Bold,
-                    color = Color(0xFFF8FAFC)
+                    color = TextPrimary
+                )
+                Text(
+                    text = "${repairCases.size} cases",
+                    fontSize = 12.sp,
+                    color = TextMutedColor
                 )
             }
         }
@@ -242,7 +328,7 @@ fun DashboardScreen(
                             text = repairCase.title,
                             fontSize = 14.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color(0xFFF8FAFC)
+                            color = TextPrimary
                         )
                         StatusBadge(if (repairCase.isSolved) "SOLVED" else "PENDING")
                     }
@@ -250,13 +336,13 @@ fun DashboardScreen(
                     Text(
                         text = "Fault: ${repairCase.fault} | Key: ${repairCase.uartKeyLog}",
                         fontSize = 12.sp,
-                        color = Color(0xFF38BDF8)
+                        color = AccentCyan
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Fix: ${repairCase.repairSteps}",
                         fontSize = 11.sp,
-                        color = Color(0xFF94A3B8)
+                        color = TextSecondary
                     )
                 }
             }
