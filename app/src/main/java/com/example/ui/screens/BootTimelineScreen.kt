@@ -1,5 +1,17 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.AppBackground
+import com.example.ui.theme.CardBackground
+import com.example.ui.theme.CardBorder
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.TextMutedColor
+import com.example.ui.theme.AccentCyan
+import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.WarningYellow
+import com.example.ui.theme.ErrorRed
+import com.example.ui.theme.TerminalBg
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -64,12 +76,12 @@ fun BootTimelineScreen(viewModel: MainViewModel) {
                         text = "Animated Boot Stage Timeline",
                         fontSize = 16.sp,
                         fontWeight = FontWeight.Bold,
-                        color = Color.White
+                        color = TextPrimary
                     )
                     Text(
                         text = "Automatic Detection of BootROM, XBL, DDR, UFS, TrustZone & Kernel",
                         fontSize = 11.sp,
-                        color = Color(0xFF94A3B8)
+                        color = TextSecondary
                     )
                 }
             }
@@ -104,12 +116,12 @@ fun BootTimelineScreen(viewModel: MainViewModel) {
                                         text = stage.stageName,
                                         fontSize = 15.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color.White
+                                        color = TextPrimary
                                     )
                                     Text(
                                         text = stage.descriptionMm,
                                         fontSize = 11.sp,
-                                        color = Color(0xFF38BDF8)
+                                        color = AccentCyan
                                     )
                                 }
                             }
@@ -122,7 +134,7 @@ fun BootTimelineScreen(viewModel: MainViewModel) {
                                 modifier = Modifier
                                     .fillMaxWidth()
                                     .clip(RoundedCornerShape(8.dp))
-                                    .background(Color(0xFF000000))
+                                    .background(AppBackground)
                                     .padding(8.dp)
                             ) {
                                 Column {
@@ -130,7 +142,7 @@ fun BootTimelineScreen(viewModel: MainViewModel) {
                                         text = "Detected Serial Lines:",
                                         fontSize = 10.sp,
                                         fontWeight = FontWeight.Bold,
-                                        color = Color(0xFF94A3B8)
+                                        color = TextSecondary
                                     )
                                     stage.detectedLines.forEach { line ->
                                         Text(

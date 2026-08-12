@@ -181,26 +181,31 @@ fun AiAssistantScreen(viewModel: MainViewModel) {
 
                         items(chatHistory.size) { idx ->
                             val (user, ai) = chatHistory[idx]
-                            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(CardBackground)
-                                        .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
-                                        .padding(10.dp)
-                                ) {
-                                    Text("Q: $user", fontSize = 12.sp, color = AccentCyan)
+                            Column(verticalArrangement = Arrangement.spacedBy(10.dp), modifier = Modifier.fillMaxWidth()) {
+                                // User Message Bubble
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.End) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.85f)
+                                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 16.dp, bottomEnd = 4.dp))
+                                            .background(AccentCyan.copy(alpha = 0.15f))
+                                            .padding(12.dp)
+                                    ) {
+                                        Text(text = user, fontSize = 13.sp, color = TextPrimary)
+                                    }
                                 }
-                                Box(
-                                    modifier = Modifier
-                                        .fillMaxWidth()
-                                        .clip(RoundedCornerShape(8.dp))
-                                        .background(Color(0xFF070A0F))
-                                        .border(1.dp, CardBorder, RoundedCornerShape(8.dp))
-                                        .padding(10.dp)
-                                ) {
-                                    Text("AI: $ai", fontSize = 12.sp, color = TextPrimary)
+                                // AI Message Bubble
+                                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Start) {
+                                    Box(
+                                        modifier = Modifier
+                                            .fillMaxWidth(0.85f)
+                                            .clip(RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 4.dp, bottomEnd = 16.dp))
+                                            .background(CardBackground)
+                                            .border(1.dp, CardBorder, RoundedCornerShape(topStart = 16.dp, topEnd = 16.dp, bottomStart = 4.dp, bottomEnd = 16.dp))
+                                            .padding(12.dp)
+                                    ) {
+                                        Text(text = ai, fontSize = 13.sp, color = TextPrimary, lineHeight = 18.sp)
+                                    }
                                 }
                             }
                         }
@@ -258,7 +263,8 @@ fun AiAssistantScreen(viewModel: MainViewModel) {
                     if (msg.isNotBlank()) {
                         userMessage = ""
                         scope.launch {
-                            val response = viewModel.aiService.chatWithAi(chatHistory, msg)
+                            val contextData = viewModel.getDatabaseContextSummary()
+                            val response = viewModel.aiService.chatWithAi(chatHistory, msg, contextData)
                             chatHistory = chatHistory + Pair(msg, response)
                         }
                     }

@@ -384,4 +384,14 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     fun parseKeywords(log: String): List<KeywordInfo> {
         return SmartUartParser.parseLineForKeywords(log)
     }
+
+    fun getDatabaseContextSummary(): String {
+        val sessions = savedSessions.value.takeLast(10).joinToString("\n") {
+            "[${it.date}] Session ${it.brand} ${it.model}: ${it.rawLogContent.take(150).replace("\n", " ")}"
+        }
+        val cases = repairCases.value.takeLast(5).joinToString("\n") {
+            "[${it.date}] Repair Case ${it.model} - ${it.fault}: Fix=${it.repairSteps} (Log: ${it.uartKeyLog})"
+        }
+        return "Recent Saved Sessions:\n$sessions\n\nRecent Repair Cases:\n$cases"
+    }
 }

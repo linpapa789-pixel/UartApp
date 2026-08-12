@@ -1,5 +1,17 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.AppBackground
+import com.example.ui.theme.CardBackground
+import com.example.ui.theme.CardBorder
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.TextMutedColor
+import com.example.ui.theme.AccentCyan
+import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.WarningYellow
+import com.example.ui.theme.ErrorRed
+import com.example.ui.theme.TerminalBg
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -51,30 +63,30 @@ fun GoodLogLibraryScreen(viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(AppBackground)
             .padding(14.dp)
     ) {
         // Header
-        GlassCard(borderColor = Color(0xFF10B981)) {
+        GlassCard(borderColor = SuccessGreen) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null, tint = Color(0xFF10B981))
+                    Icon(Icons.AutoMirrored.Filled.LibraryBooks, contentDescription = null, tint = SuccessGreen)
                     Spacer(modifier = Modifier.width(8.dp))
                     Column {
                         Text(
                             text = "Reference UART Good Log Bank",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = TextPrimary
                         )
                         Text(
                             text = "Verified Normal Boot UART Logs for Qualcomm, MTK, Exynos, iPhone",
                             fontSize = 11.sp,
-                            color = Color(0xFF94A3B8)
+                            color = TextSecondary
                         )
                     }
                 }
@@ -87,17 +99,17 @@ fun GoodLogLibraryScreen(viewModel: MainViewModel) {
         OutlinedTextField(
             value = searchQuery,
             onValueChange = { searchQuery = it },
-            placeholder = { Text("Search brand, model, chipset...", fontSize = 11.sp, color = Color(0xFF64748B)) },
-            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF10B981)) },
+            placeholder = { Text("Search brand, model, chipset...", fontSize = 11.sp, color = TextMutedColor) },
+            leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = SuccessGreen) },
             modifier = Modifier.fillMaxWidth(),
             shape = RoundedCornerShape(12.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedBorderColor = Color(0xFF10B981),
-                unfocusedBorderColor = Color(0x1AFFFFFF),
-                focusedContainerColor = Color(0xFF1B1B1F),
-                unfocusedContainerColor = Color(0xFF1B1B1F),
-                focusedTextColor = Color.White,
-                unfocusedTextColor = Color.White
+                focusedBorderColor = SuccessGreen,
+                unfocusedBorderColor = CardBorder,
+                focusedContainerColor = CardBackground,
+                unfocusedContainerColor = CardBackground,
+                focusedTextColor = TextPrimary,
+                unfocusedTextColor = TextPrimary
             )
         )
 
@@ -111,14 +123,14 @@ fun GoodLogLibraryScreen(viewModel: MainViewModel) {
             Button(
                 onClick = { selectedTab = 0 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedTab == 0) Color(0xFF10B981) else Color(0xFF1B1B1F)
+                    containerColor = if (selectedTab == 0) SuccessGreen else CardBackground
                 ),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     "Good Logs (${goodLogs.size})",
-                    color = if (selectedTab == 0) Color.Black else Color.White,
+                    color = if (selectedTab == 0) AppBackground else TextPrimary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -127,14 +139,14 @@ fun GoodLogLibraryScreen(viewModel: MainViewModel) {
             Button(
                 onClick = { selectedTab = 1 },
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (selectedTab == 1) Color(0xFF06B6D4) else Color(0xFF1B1B1F)
+                    containerColor = if (selectedTab == 1) AccentCyan else CardBackground
                 ),
                 shape = RoundedCornerShape(10.dp),
                 modifier = Modifier.weight(1f)
             ) {
                 Text(
                     "My Sessions (${savedSessions.size})",
-                    color = if (selectedTab == 1) Color.Black else Color.White,
+                    color = if (selectedTab == 1) AppBackground else TextPrimary,
                     fontSize = 11.sp,
                     fontWeight = FontWeight.Bold
                 )
@@ -150,7 +162,7 @@ fun GoodLogLibraryScreen(viewModel: MainViewModel) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(goodLogs) { log ->
-                    GlassCard(borderColor = Color(0xFF10B981)) {
+                    GlassCard(borderColor = SuccessGreen) {
                         Column {
                             Row(
                                 modifier = Modifier.fillMaxWidth(),
@@ -160,22 +172,22 @@ fun GoodLogLibraryScreen(viewModel: MainViewModel) {
                                     text = "${log.brand} ${log.model} (${log.codename})",
                                     fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color.White
+                                    color = TextPrimary
                                 )
                                 Box(
                                     modifier = Modifier
                                         .clip(RoundedCornerShape(6.dp))
-                                        .background(Color(0xFF10B981).copy(alpha = 0.2f))
+                                        .background(SuccessGreen.copy(alpha = 0.2f))
                                         .padding(horizontal = 8.dp, vertical = 2.dp)
                                 ) {
-                                    Text(log.chipset, fontSize = 10.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)
+                                    Text(log.chipset, fontSize = 10.sp, color = SuccessGreen, fontWeight = FontWeight.Bold)
                                 }
                             }
                             Spacer(modifier = Modifier.height(6.dp))
                             Text(
                                 text = "Preview: ${log.rawLogContent.take(120)}...",
                                 fontSize = 11.sp,
-                                color = Color(0xFF94A3B8)
+                                color = TextSecondary
                             )
                         }
                     }
@@ -187,19 +199,19 @@ fun GoodLogLibraryScreen(viewModel: MainViewModel) {
                 verticalArrangement = Arrangement.spacedBy(10.dp)
             ) {
                 items(savedSessions) { session ->
-                    GlassCard(borderColor = Color(0xFF06B6D4)) {
+                    GlassCard(borderColor = AccentCyan) {
                         Column {
                             Text(
                                 text = session.title,
                                 fontSize = 14.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color.White
+                                color = TextPrimary
                             )
                             Spacer(modifier = Modifier.height(4.dp))
                             Text(
                                 text = "Tech: ${session.technician} | Status: ${session.status} | Job: #${session.repairJobNumber}",
                                 fontSize = 11.sp,
-                                color = Color(0xFF38BDF8)
+                                color = AccentCyan
                             )
                         }
                     }

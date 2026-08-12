@@ -233,6 +233,8 @@ fun SettingsScreen(
             }
         }
 
+        var customBaudRate by remember { mutableStateOf("") }
+
         // UART Hardware Baud Rate Configuration
         GlassCard(borderColor = WarningYellow) {
             Column {
@@ -263,6 +265,45 @@ fun SettingsScreen(
                                 fontWeight = FontWeight.Bold
                             )
                         }
+                    }
+                }
+                
+                Spacer(modifier = Modifier.height(10.dp))
+                
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp),
+                    verticalAlignment = Alignment.CenterVertically
+                ) {
+                    OutlinedTextField(
+                        value = customBaudRate,
+                        onValueChange = { customBaudRate = it.filter { char -> char.isDigit() } },
+                        placeholder = { Text("Custom Baud Rate (e.g. 1500000)", fontSize = 11.sp, color = TextMutedColor) },
+                        modifier = Modifier.weight(1f),
+                        singleLine = true,
+                        keyboardOptions = androidx.compose.foundation.text.KeyboardOptions(keyboardType = androidx.compose.ui.text.input.KeyboardType.Number),
+                        shape = RoundedCornerShape(8.dp),
+                        colors = OutlinedTextFieldDefaults.colors(
+                            focusedBorderColor = WarningYellow,
+                            unfocusedBorderColor = CardBorder,
+                            focusedContainerColor = CardBackground,
+                            unfocusedContainerColor = CardBackground,
+                            focusedTextColor = TextPrimary,
+                            unfocusedTextColor = TextPrimary
+                        )
+                    )
+                    Button(
+                        onClick = {
+                            val rate = customBaudRate.toIntOrNull()
+                            if (rate != null && rate > 0) {
+                                viewModel.usbManager.setBaudRate(rate)
+                                customBaudRate = ""
+                            }
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = WarningYellow),
+                        shape = RoundedCornerShape(8.dp)
+                    ) {
+                        Text("Set", color = AppBackground, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
             }

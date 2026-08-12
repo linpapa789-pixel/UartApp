@@ -139,10 +139,16 @@ class GeminiAiService {
         }
     }
 
-    suspend fun chatWithAi(history: List<Pair<String, String>>, userMessage: String): String = withContext(Dispatchers.IO) {
+    suspend fun chatWithAi(history: List<Pair<String, String>>, userMessage: String, contextData: String = ""): String = withContext(Dispatchers.IO) {
         val apiKey = getApiKey()
         if (apiKey.isBlank() || apiKey == "MY_GEMINI_API_KEY") {
             return@withContext "🇲🇲 (Offline Mode) မင်္ဂလာပါ။ အော့ဖ်လိုင်း စစ်ဆေးမှု စနစ်ဖြင့် ပြုပြင်ရေး အကြံပြုချက်များကို Smart Parser တွင် တိုက်ရိုက် ကြည့်ရှုနိုင်ပါသည်။ AI Live Connect ပြုလုပ်ရန် Settings တွင် Gemini API Key ဖြည့်သွင်းပါ။\n\nQ: $userMessage\nAns: လိုင်းတွင်း တွေ့ရှိသော hardware error (DDR / UFS / PMIC) လိုင်းများကို တိုင်းတာပါ။"
+        }
+
+        val dynamicSystemPrompt = if (contextData.isNotBlank()) {
+            defaultSystemPrompt + "\n\n### USER'S SAVED DATABASE MEMORY (TIMESTAMPED) ###\n" + contextData + "\n\nAlways use this saved data to answer questions about the user's past logs, past repairs, or historical data. If the user asks 'what happened previously?' or refers to a saved log, refer strictly to this memory."
+        } else {
+            defaultSystemPrompt
         }
 
         try {
@@ -165,7 +171,7 @@ class GeminiAiService {
             val jsonPayload = JSONObject().apply {
                 put("contents", contentsArr)
                 put("systemInstruction", JSONObject().apply {
-                    put("parts", JSONArray().apply { put(JSONObject().put("text", defaultSystemPrompt)) })
+                    put("parts", JSONArray().apply { put(JSONObject().put("text", dynamicSystemPrompt)) })
                 })
                 put("generationConfig", JSONObject().apply { put("temperature", 0.5) })
             }

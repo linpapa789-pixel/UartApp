@@ -1,5 +1,17 @@
 package com.example.ui.screens
 
+import com.example.ui.theme.AppBackground
+import com.example.ui.theme.CardBackground
+import com.example.ui.theme.CardBorder
+import com.example.ui.theme.TextPrimary
+import com.example.ui.theme.TextSecondary
+import com.example.ui.theme.TextMutedColor
+import com.example.ui.theme.AccentCyan
+import com.example.ui.theme.SuccessGreen
+import com.example.ui.theme.WarningYellow
+import com.example.ui.theme.ErrorRed
+import com.example.ui.theme.TerminalBg
+
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -113,11 +125,11 @@ fun AiBrainStudioScreen(viewModel: MainViewModel) {
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF000000))
+            .background(AppBackground)
             .padding(12.dp)
     ) {
         // Bento Top Header
-        GlassCard(borderColor = Color(0xFF06B6D4)) {
+        GlassCard(borderColor = AccentCyan) {
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
@@ -128,13 +140,13 @@ fun AiBrainStudioScreen(viewModel: MainViewModel) {
                         modifier = Modifier
                             .size(38.dp)
                             .clip(RoundedCornerShape(10.dp))
-                            .background(Color(0xFF06B6D4).copy(alpha = 0.2f)),
+                            .background(AccentCyan.copy(alpha = 0.2f)),
                         contentAlignment = Alignment.Center
                     ) {
                         Icon(
                             imageVector = Icons.Default.AutoAwesome,
                             contentDescription = null,
-                            tint = Color(0xFF06B6D4),
+                            tint = AccentCyan,
                             modifier = Modifier.size(22.dp)
                         )
                     }
@@ -144,12 +156,12 @@ fun AiBrainStudioScreen(viewModel: MainViewModel) {
                             text = "🧠 AI BRAIN STUDIO",
                             fontSize = 16.sp,
                             fontWeight = FontWeight.Bold,
-                            color = Color.White
+                            color = TextPrimary
                         )
                         Text(
                             text = "Myanmar Hardware AI Intelligence Control Center & Rule Engine",
                             fontSize = 11.sp,
-                            color = Color(0xFF94A3B8)
+                            color = TextSecondary
                         )
                     }
                 }
@@ -168,10 +180,10 @@ fun AiBrainStudioScreen(viewModel: MainViewModel) {
                 Box(
                     modifier = Modifier
                         .clip(RoundedCornerShape(10.dp))
-                        .background(if (isSelected) Color(0xFF06B6D4) else Color(0xFF1B1B1F))
+                        .background(if (isSelected) AccentCyan else CardBackground)
                         .border(
                             1.dp,
-                            if (isSelected) Color(0xFF38BDF8) else Color(0x1AFFFFFF),
+                            if (isSelected) AccentCyan else CardBorder,
                             RoundedCornerShape(10.dp)
                         )
                         .clickable { activeSubTab = subTab }
@@ -181,7 +193,7 @@ fun AiBrainStudioScreen(viewModel: MainViewModel) {
                         Icon(
                             imageVector = subTab.icon,
                             contentDescription = null,
-                            tint = if (isSelected) Color.Black else Color(0xFF94A3B8),
+                            tint = if (isSelected) AppBackground else TextSecondary,
                             modifier = Modifier.size(14.dp)
                         )
                         Spacer(modifier = Modifier.width(6.dp))
@@ -189,7 +201,7 @@ fun AiBrainStudioScreen(viewModel: MainViewModel) {
                             text = subTab.title,
                             fontSize = 11.sp,
                             fontWeight = FontWeight.Bold,
-                            color = if (isSelected) Color.Black else Color.White
+                            color = if (isSelected) AppBackground else TextPrimary
                         )
                     }
                 }
@@ -250,17 +262,17 @@ fun PromptsModuleView(viewModel: MainViewModel) {
             OutlinedTextField(
                 value = searchQuery,
                 onValueChange = { searchQuery = it },
-                placeholder = { Text("Search prompts...", fontSize = 11.sp, color = Color(0xFF64748B)) },
-                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = Color(0xFF06B6D4)) },
+                placeholder = { Text("Search prompts...", fontSize = 11.sp, color = TextMutedColor) },
+                leadingIcon = { Icon(Icons.Default.Search, contentDescription = null, tint = AccentCyan) },
                 modifier = Modifier.weight(1f),
                 shape = RoundedCornerShape(10.dp),
                 colors = OutlinedTextFieldDefaults.colors(
-                    focusedBorderColor = Color(0xFF06B6D4),
-                    unfocusedBorderColor = Color(0x1AFFFFFF),
-                    focusedContainerColor = Color(0xFF1B1B1F),
-                    unfocusedContainerColor = Color(0xFF1B1B1F),
-                    focusedTextColor = Color.White,
-                    unfocusedTextColor = Color.White
+                    focusedBorderColor = AccentCyan,
+                    unfocusedBorderColor = CardBorder,
+                    focusedContainerColor = CardBackground,
+                    unfocusedContainerColor = CardBackground,
+                    focusedTextColor = TextPrimary,
+                    unfocusedTextColor = TextPrimary
                 )
             )
 
@@ -268,25 +280,25 @@ fun PromptsModuleView(viewModel: MainViewModel) {
 
             Button(
                 onClick = { showAddDialog = !showAddDialog },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF06B6D4)),
+                colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Icon(Icons.Default.Add, contentDescription = null, tint = Color.Black)
+                Icon(Icons.Default.Add, contentDescription = null, tint = AppBackground)
                 Spacer(modifier = Modifier.width(4.dp))
-                Text("New Prompt", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                Text("New Prompt", color = AppBackground, fontWeight = FontWeight.Bold, fontSize = 11.sp)
             }
         }
 
         if (showAddDialog) {
             Spacer(modifier = Modifier.height(10.dp))
-            GlassCard(borderColor = Color(0xFF06B6D4)) {
+            GlassCard(borderColor = AccentCyan) {
                 Column {
-                    Text("Add Custom Prompt", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("Add Custom Prompt", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(modifier = Modifier.height(6.dp))
                     OutlinedTextField(
                         value = newPromptName,
                         onValueChange = { newPromptName = it },
-                        placeholder = { Text("Prompt Name (e.g. RAM Voltage Checker)", fontSize = 11.sp, color = Color(0xFF64748B)) },
+                        placeholder = { Text("Prompt Name (e.g. RAM Voltage Checker)", fontSize = 11.sp, color = TextMutedColor) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp)
                     )
@@ -294,7 +306,7 @@ fun PromptsModuleView(viewModel: MainViewModel) {
                     OutlinedTextField(
                         value = newPromptContent,
                         onValueChange = { newPromptContent = it },
-                        placeholder = { Text("Enter prompt instructions...", fontSize = 11.sp, color = Color(0xFF64748B)) },
+                        placeholder = { Text("Enter prompt instructions...", fontSize = 11.sp, color = TextMutedColor) },
                         modifier = Modifier.fillMaxWidth(),
                         shape = RoundedCornerShape(8.dp)
                     )
@@ -317,9 +329,9 @@ fun PromptsModuleView(viewModel: MainViewModel) {
                                     showAddDialog = false
                                 }
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981))
+                            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen)
                         ) {
-                            Text("Save Prompt", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                            Text("Save Prompt", color = AppBackground, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                         }
                     }
                 }
@@ -330,7 +342,7 @@ fun PromptsModuleView(viewModel: MainViewModel) {
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(filtered) { prompt ->
-                GlassCard(borderColor = if (prompt.isEnabled) Color(0xFF06B6D4) else Color(0xFF334155)) {
+                GlassCard(borderColor = if (prompt.isEnabled) AccentCyan else CardBorder) {
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
@@ -344,23 +356,23 @@ fun PromptsModuleView(viewModel: MainViewModel) {
                                     Icon(
                                         imageVector = if (prompt.isFavorite) Icons.Default.Star else Icons.Default.StarBorder,
                                         contentDescription = null,
-                                        tint = if (prompt.isFavorite) Color(0xFFF59E0B) else Color(0xFF64748B)
+                                        tint = if (prompt.isFavorite) WarningYellow else TextMutedColor
                                     )
                                 }
-                                Text(prompt.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                                Text(prompt.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                             }
 
                             Row(verticalAlignment = Alignment.CenterVertically) {
                                 Switch(
                                     checked = prompt.isEnabled,
                                     onCheckedChange = { viewModel.updatePrompt(prompt.copy(isEnabled = it)) },
-                                    colors = SwitchDefaults.colors(checkedThumbColor = Color.Black, checkedTrackColor = Color(0xFF06B6D4))
+                                    colors = SwitchDefaults.colors(checkedThumbColor = AppBackground, checkedTrackColor = AccentCyan)
                                 )
                                 IconButton(onClick = { viewModel.duplicatePrompt(prompt) }) {
-                                    Icon(Icons.Default.ContentCopy, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.ContentCopy, contentDescription = null, tint = AccentCyan, modifier = Modifier.size(16.dp))
                                 }
                                 IconButton(onClick = { viewModel.deletePrompt(prompt) }) {
-                                    Icon(Icons.Default.Delete, contentDescription = null, tint = Color(0xFFEF4444), modifier = Modifier.size(16.dp))
+                                    Icon(Icons.Default.Delete, contentDescription = null, tint = ErrorRed, modifier = Modifier.size(16.dp))
                                 }
                             }
                         }
@@ -369,7 +381,7 @@ fun PromptsModuleView(viewModel: MainViewModel) {
                         Text(
                             text = prompt.content,
                             fontSize = 11.sp,
-                            color = Color(0xFF94A3B8),
+                            color = TextSecondary,
                             fontFamily = FontFamily.Monospace
                         )
                     }
@@ -388,22 +400,22 @@ fun RolesModuleView(viewModel: MainViewModel) {
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(roles) { role ->
-            GlassCard(borderColor = if (role.isEnabled) Color(0xFF10B981) else Color(0xFF334155)) {
+            GlassCard(borderColor = if (role.isEnabled) SuccessGreen else CardBorder) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Column(modifier = Modifier.weight(1f)) {
-                        Text(role.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                        Text(role.name, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                         Spacer(modifier = Modifier.height(2.dp))
-                        Text(role.description, fontSize = 11.sp, color = Color(0xFF94A3B8))
+                        Text(role.description, fontSize = 11.sp, color = TextSecondary)
                     }
 
                     Switch(
                         checked = role.isEnabled,
                         onCheckedChange = { viewModel.updateRole(role.copy(isEnabled = it)) },
-                        colors = SwitchDefaults.colors(checkedThumbColor = Color.Black, checkedTrackColor = Color(0xFF10B981))
+                        colors = SwitchDefaults.colors(checkedThumbColor = AppBackground, checkedTrackColor = SuccessGreen)
                     )
                 }
             }
@@ -430,37 +442,37 @@ fun RulesModuleView(viewModel: MainViewModel) {
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Text("Visual Rule Engine", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color.White)
+            Text("Visual Rule Engine", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
             Button(
                 onClick = { showAddRule = !showAddRule },
-                colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B)),
+                colors = ButtonDefaults.buttonColors(containerColor = WarningYellow),
                 shape = RoundedCornerShape(10.dp)
             ) {
-                Text("+ New Rule", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                Text("+ New Rule", color = AppBackground, fontWeight = FontWeight.Bold, fontSize = 11.sp)
             }
         }
 
         if (showAddRule) {
             Spacer(modifier = Modifier.height(8.dp))
-            GlassCard(borderColor = Color(0xFFF59E0B)) {
+            GlassCard(borderColor = WarningYellow) {
                 Column {
-                    Text("Create IF ... THEN Visual Rule", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF59E0B))
+                    Text("Create IF ... THEN Visual Rule", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = WarningYellow)
                     Spacer(modifier = Modifier.height(6.dp))
                     OutlinedTextField(
                         value = ruleName, onValueChange = { ruleName = it },
-                        placeholder = { Text("Rule Name (e.g. Backlight Voltage Fail)", fontSize = 11.sp, color = Color(0xFF64748B)) },
+                        placeholder = { Text("Rule Name (e.g. Backlight Voltage Fail)", fontSize = 11.sp, color = TextMutedColor) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(
                         value = conditionVal, onValueChange = { conditionVal = it },
-                        placeholder = { Text("IF Log CONTAINS text (e.g. bklic = 0)", fontSize = 11.sp, color = Color(0xFF64748B)) },
+                        placeholder = { Text("IF Log CONTAINS text (e.g. bklic = 0)", fontSize = 11.sp, color = TextMutedColor) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     OutlinedTextField(
                         value = actionTitle, onValueChange = { actionTitle = it },
-                        placeholder = { Text("THEN Failure Cause (e.g. Backlight Driver Short)", fontSize = 11.sp, color = Color(0xFF64748B)) },
+                        placeholder = { Text("THEN Failure Cause (e.g. Backlight Driver Short)", fontSize = 11.sp, color = TextMutedColor) },
                         modifier = Modifier.fillMaxWidth()
                     )
                     Spacer(modifier = Modifier.height(6.dp))
@@ -478,9 +490,9 @@ fun RulesModuleView(viewModel: MainViewModel) {
                                 showAddRule = false
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = Color(0xFFF59E0B))
+                        colors = ButtonDefaults.buttonColors(containerColor = WarningYellow)
                     ) {
-                        Text("Save Rule", color = Color.Black, fontWeight = FontWeight.Bold, fontSize = 11.sp)
+                        Text("Save Rule", color = AppBackground, fontWeight = FontWeight.Bold, fontSize = 11.sp)
                     }
                 }
             }
@@ -490,22 +502,22 @@ fun RulesModuleView(viewModel: MainViewModel) {
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(rules) { rule ->
-                GlassCard(borderColor = Color(0xFFF59E0B)) {
+                GlassCard(borderColor = WarningYellow) {
                     Column {
                         Row(
                             modifier = Modifier.fillMaxWidth(),
                             horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text("IF Log CONTAINS '${rule.value}'", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFFF59E0B))
+                            Text("IF Log CONTAINS '${rule.value}'", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = WarningYellow)
                             Switch(
                                 checked = rule.isEnabled,
                                 onCheckedChange = { viewModel.updateRule(rule.copy(isEnabled = it)) },
-                                colors = SwitchDefaults.colors(checkedThumbColor = Color.Black, checkedTrackColor = Color(0xFFF59E0B))
+                                colors = SwitchDefaults.colors(checkedThumbColor = AppBackground, checkedTrackColor = WarningYellow)
                             )
                         }
-                        Text("THEN: ${rule.actionTitle}", fontSize = 11.sp, color = Color.White)
+                        Text("THEN: ${rule.actionTitle}", fontSize = 11.sp, color = TextPrimary)
                         if (rule.suggestedIcs.isNotBlank()) {
-                            Text("Suggested ICs: ${rule.suggestedIcs}", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                            Text("Suggested ICs: ${rule.suggestedIcs}", fontSize = 10.sp, color = TextSecondary)
                         }
                     }
                 }
@@ -523,20 +535,20 @@ fun KeywordsModuleView(viewModel: MainViewModel) {
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(keywords) { kw ->
-            GlassCard(borderColor = Color(0xFF06B6D4)) {
+            GlassCard(borderColor = AccentCyan) {
                 Column {
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween
                     ) {
-                        Text(kw.keyword, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = Color(0xFF38BDF8))
-                        Text("Stage: ${kw.bootStage}", fontSize = 10.sp, color = Color(0xFF10B981), fontWeight = FontWeight.Bold)
+                        Text(kw.keyword, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = AccentCyan)
+                        Text("Stage: ${kw.bootStage}", fontSize = 10.sp, color = SuccessGreen, fontWeight = FontWeight.Bold)
                     }
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text(kw.meaning, fontSize = 11.sp, color = Color.White)
-                    Text("🇲🇲 ${kw.myanmarMeaning}", fontSize = 11.sp, color = Color(0xFF94A3B8))
+                    Text(kw.meaning, fontSize = 11.sp, color = TextPrimary)
+                    Text("🇲🇲 ${kw.myanmarMeaning}", fontSize = 11.sp, color = TextSecondary)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("Related IC: ${kw.relatedIc} | Power Rail: ${kw.powerRail}", fontSize = 10.sp, color = Color(0xFFF59E0B))
+                    Text("Related IC: ${kw.relatedIc} | Power Rail: ${kw.powerRail}", fontSize = 10.sp, color = WarningYellow)
                 }
             }
         }
@@ -552,14 +564,14 @@ fun KnowledgeModuleView(viewModel: MainViewModel) {
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(cases) { c ->
-            GlassCard(borderColor = Color(0xFF10B981)) {
+            GlassCard(borderColor = SuccessGreen) {
                 Column {
-                    Text("${c.brand} ${c.model} - ${c.fault}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                    Text("${c.brand} ${c.model} - ${c.fault}", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                     Spacer(modifier = Modifier.height(4.dp))
-                    Text("UART Log: ${c.uartKeyLog}", fontSize = 10.sp, fontFamily = FontFamily.Monospace, color = Color(0xFF38BDF8))
-                    Text("Current: ${c.currentConsumption} | Voltage: ${c.voltageData}", fontSize = 10.sp, color = Color(0xFFF59E0B))
-                    Text("Root Cause: ${c.cause}", fontSize = 11.sp, color = Color(0xFFE2E8F0))
-                    Text("Repair: ${c.repairSteps}", fontSize = 11.sp, color = Color(0xFF10B981))
+                    Text("UART Log: ${c.uartKeyLog}", fontSize = 10.sp, fontFamily = FontFamily.Monospace, color = AccentCyan)
+                    Text("Current: ${c.currentConsumption} | Voltage: ${c.voltageData}", fontSize = 10.sp, color = WarningYellow)
+                    Text("Root Cause: ${c.cause}", fontSize = 11.sp, color = TextPrimary)
+                    Text("Repair: ${c.repairSteps}", fontSize = 11.sp, color = SuccessGreen)
                 }
             }
         }
@@ -575,22 +587,22 @@ fun MemoriesModuleView(viewModel: MainViewModel) {
 
     LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
         items(memories) { mem ->
-            GlassCard(borderColor = if (mem.isEnabled) Color(0xFF38BDF8) else Color(0xFF334155)) {
+            GlassCard(borderColor = if (mem.isEnabled) AccentCyan else CardBorder) {
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier.weight(1f)) {
-                        Icon(Icons.Default.Bookmark, contentDescription = null, tint = Color(0xFF38BDF8), modifier = Modifier.size(16.dp))
+                        Icon(Icons.Default.Bookmark, contentDescription = null, tint = AccentCyan, modifier = Modifier.size(16.dp))
                         Spacer(modifier = Modifier.width(8.dp))
-                        Text(mem.content, fontSize = 12.sp, color = Color.White)
+                        Text(mem.content, fontSize = 12.sp, color = TextPrimary)
                     }
 
                     Switch(
                         checked = mem.isEnabled,
                         onCheckedChange = { viewModel.updateMemory(mem.copy(isEnabled = it)) },
-                        colors = SwitchDefaults.colors(checkedThumbColor = Color.Black, checkedTrackColor = Color(0xFF38BDF8))
+                        colors = SwitchDefaults.colors(checkedThumbColor = AppBackground, checkedTrackColor = AccentCyan)
                     )
                 }
             }
@@ -612,9 +624,9 @@ fun ReasoningModuleView(viewModel: MainViewModel) {
             .verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        GlassCard(borderColor = Color(0xFF06B6D4)) {
+        GlassCard(borderColor = AccentCyan) {
             Column {
-                Text("Temperature (Creativity): ${String.format("%.2f", temp)}", fontSize = 12.sp, color = Color.White)
+                Text("Temperature (Creativity): ${String.format("%.2f", temp)}", fontSize = 12.sp, color = TextPrimary)
                 Slider(
                     value = temp,
                     onValueChange = {
@@ -622,17 +634,17 @@ fun ReasoningModuleView(viewModel: MainViewModel) {
                         settings?.let { s -> viewModel.saveSettings(s.copy(temperature = temp)) }
                     },
                     valueRange = 0.0f..1.0f,
-                    colors = SliderDefaults.colors(thumbColor = Color(0xFF06B6D4), activeTrackColor = Color(0xFF06B6D4))
+                    colors = SliderDefaults.colors(thumbColor = AccentCyan, activeTrackColor = AccentCyan)
                 )
-                Text("0.1 = Strict Deterministic Hardware Analysis | 0.8 = Creative General Suggestions", fontSize = 10.sp, color = Color(0xFF94A3B8))
+                Text("0.1 = Strict Deterministic Hardware Analysis | 0.8 = Creative General Suggestions", fontSize = 10.sp, color = TextSecondary)
             }
         }
 
         GlassCard {
             Column {
-                Text("Language: Myanmar (မြန်မာ)", fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
-                Text("Technical Detail Level: Senior Hardware Engineer", fontSize = 11.sp, color = Color(0xFF94A3B8))
-                Text("Confidence Threshold: 75%", fontSize = 11.sp, color = Color(0xFF94A3B8))
+                Text("Language: Myanmar (မြန်မာ)", fontSize = 12.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
+                Text("Technical Detail Level: Senior Hardware Engineer", fontSize = 11.sp, color = TextSecondary)
+                Text("Confidence Threshold: 75%", fontSize = 11.sp, color = TextSecondary)
             }
         }
     }
@@ -655,13 +667,13 @@ fun PriorityModuleView(viewModel: MainViewModel) {
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("AI Knowledge Priority Order (Hierarchy)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text("AI Knowledge Priority Order (Hierarchy)", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
         defaultPriority.forEach { item ->
-            GlassCard(borderColor = Color(0xFF10B981)) {
+            GlassCard(borderColor = SuccessGreen) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Layers, contentDescription = null, tint = Color(0xFF10B981))
+                    Icon(Icons.Default.Layers, contentDescription = null, tint = SuccessGreen)
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(item, fontSize = 12.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                    Text(item, fontSize = 12.sp, color = TextPrimary, fontWeight = FontWeight.Bold)
                 }
             }
         }
@@ -685,21 +697,21 @@ fun WorkflowModuleView(viewModel: MainViewModel) {
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Text("Visual Processing Pipeline", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text("Visual Processing Pipeline", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
         nodes.forEachIndexed { idx, node ->
-            GlassCard(borderColor = Color(0xFF38BDF8)) {
+            GlassCard(borderColor = AccentCyan) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
                     Box(
                         modifier = Modifier
                             .size(24.dp)
                             .clip(CircleShape)
-                            .background(Color(0xFF38BDF8)),
+                            .background(AccentCyan),
                         contentAlignment = Alignment.Center
                     ) {
-                        Text("${idx + 1}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = Color.Black)
+                        Text("${idx + 1}", fontSize = 11.sp, fontWeight = FontWeight.Bold, color = AppBackground)
                     }
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(node, fontSize = 12.sp, color = Color.White)
+                    Text(node, fontSize = 12.sp, color = TextPrimary)
                 }
             }
         }
@@ -719,7 +731,7 @@ fun TesterModuleView(viewModel: MainViewModel) {
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         GlassCard {
             Column {
-                Text("Prompt Tester", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+                Text("Prompt Tester", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
                 Spacer(modifier = Modifier.height(4.dp))
                 OutlinedTextField(
                     value = testLog,
@@ -738,24 +750,24 @@ fun TesterModuleView(viewModel: MainViewModel) {
                             isTesting = false
                         }
                     },
-                    colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF06B6D4)),
+                    colors = ButtonDefaults.buttonColors(containerColor = AccentCyan),
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     if (isTesting) {
-                        Text("Analyzing...", color = Color.Black)
+                        Text("Analyzing...", color = AppBackground)
                     } else {
-                        Text("Run Prompt Test", color = Color.Black, fontWeight = FontWeight.Bold)
+                        Text("Run Prompt Test", color = AppBackground, fontWeight = FontWeight.Bold)
                     }
                 }
             }
         }
 
         if (testOutput.isNotBlank()) {
-            GlassCard(borderColor = Color(0xFF10B981)) {
+            GlassCard(borderColor = SuccessGreen) {
                 Column(modifier = Modifier.verticalScroll(rememberScrollState())) {
-                    Text("Test Result Output:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = Color(0xFF10B981))
+                    Text("Test Result Output:", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = SuccessGreen)
                     Spacer(modifier = Modifier.height(6.dp))
-                    Text(testOutput, fontSize = 11.sp, color = Color.White)
+                    Text(testOutput, fontSize = 11.sp, color = TextPrimary)
                 }
             }
         }
@@ -772,18 +784,18 @@ fun VersionsModuleView(viewModel: MainViewModel) {
     Column(modifier = Modifier.fillMaxSize(), verticalArrangement = Arrangement.spacedBy(10.dp)) {
         Button(
             onClick = { viewModel.createVersionSnapshot("Manual Snapshot") },
-            colors = ButtonDefaults.buttonColors(containerColor = Color(0xFF10B981)),
+            colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Create Snapshot Backup", color = Color.Black, fontWeight = FontWeight.Bold)
+            Text("Create Snapshot Backup", color = AppBackground, fontWeight = FontWeight.Bold)
         }
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(versions) { ver ->
-                GlassCard(borderColor = Color(0xFF06B6D4)) {
+                GlassCard(borderColor = AccentCyan) {
                     Column {
-                        Text(ver.versionName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
-                        Text("Note: ${ver.notes}", fontSize = 11.sp, color = Color(0xFF94A3B8))
+                        Text(ver.versionName, fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
+                        Text("Note: ${ver.notes}", fontSize = 11.sp, color = TextSecondary)
                     }
                 }
             }
@@ -811,7 +823,7 @@ fun JsonEditorModuleView(viewModel: MainViewModel) {
     }
 
     Column(modifier = Modifier.fillMaxSize()) {
-        Text("Built-in Configuration JSON Editor", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color.White)
+        Text("Built-in Configuration JSON Editor", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = TextPrimary)
         Spacer(modifier = Modifier.height(8.dp))
         OutlinedTextField(
             value = rawJson,
@@ -822,10 +834,10 @@ fun JsonEditorModuleView(viewModel: MainViewModel) {
             textStyle = androidx.compose.ui.text.TextStyle(fontFamily = FontFamily.Monospace, fontSize = 12.sp),
             shape = RoundedCornerShape(10.dp),
             colors = OutlinedTextFieldDefaults.colors(
-                focusedContainerColor = Color(0xFF0A0A0A),
-                unfocusedContainerColor = Color(0xFF0A0A0A),
-                focusedTextColor = Color(0xFF38BDF8),
-                unfocusedTextColor = Color(0xFF38BDF8)
+                focusedContainerColor = TerminalBg,
+                unfocusedContainerColor = TerminalBg,
+                focusedTextColor = AccentCyan,
+                unfocusedTextColor = AccentCyan
             )
         )
     }
@@ -844,13 +856,13 @@ fun SafetyModuleView() {
     )
 
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text("AI Safety & Fact Guardrails", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = Color(0xFFEF4444))
+        Text("AI Safety & Fact Guardrails", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = ErrorRed)
         safetyList.forEach { rule ->
-            GlassCard(borderColor = Color(0xFFEF4444)) {
+            GlassCard(borderColor = ErrorRed) {
                 Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.SafetyCheck, contentDescription = null, tint = Color(0xFFEF4444))
+                    Icon(Icons.Default.SafetyCheck, contentDescription = null, tint = ErrorRed)
                     Spacer(modifier = Modifier.width(10.dp))
-                    Text(rule, fontSize = 12.sp, color = Color.White)
+                    Text(rule, fontSize = 12.sp, color = TextPrimary)
                 }
             }
         }
