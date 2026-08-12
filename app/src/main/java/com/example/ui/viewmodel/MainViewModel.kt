@@ -34,6 +34,12 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
     val usbManager = UsbSerialManager(application)
     val aiService = GeminiAiService()
 
+    val isDarkTheme = MutableStateFlow(true)
+    
+    fun toggleTheme() {
+        isDarkTheme.value = !isDarkTheme.value
+    }
+
     // Database Flows
     val savedSessions: StateFlow<List<UartSessionEntity>> = repository.allSessions
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())

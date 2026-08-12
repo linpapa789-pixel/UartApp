@@ -157,7 +157,7 @@ fun AiAssistantScreen(viewModel: MainViewModel) {
                     }
                 }
             } else if (aiResult != null) {
-                val cards = remember(aiResult) { parseReportTo8Cards(aiResult ?: "") }
+                val cards = parseReportTo8Cards(aiResult ?: "")
                 LazyColumn(
                     modifier = Modifier.fillMaxSize(),
                     verticalArrangement = Arrangement.spacedBy(10.dp)
@@ -326,6 +326,7 @@ fun ReportCardItem(card: AiReportSection) {
     }
 }
 
+@Composable
 fun parseReportTo8Cards(rawReport: String): List<AiReportSection> {
     fun extractField(key: String, default: String): String {
         val regex = Regex("(?i)$key[:\\-\\=]?\\s*(.*?)(?=\\n\\w+:|\$)", RegexOption.DOT_MATCHES_ALL)

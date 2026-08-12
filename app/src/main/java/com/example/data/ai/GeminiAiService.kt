@@ -13,6 +13,8 @@ import java.util.concurrent.TimeUnit
 
 class GeminiAiService {
 
+    var customApiKey: String = ""
+
     private val okHttpClient = OkHttpClient.Builder()
         .connectTimeout(30, TimeUnit.SECONDS)
         .readTimeout(30, TimeUnit.SECONDS)
@@ -193,7 +195,8 @@ class GeminiAiService {
         }
     }
 
-    private fun getApiKey(): String {
+    fun getApiKey(): String {
+        if (customApiKey.isNotBlank()) return customApiKey
         return try {
             BuildConfig.GEMINI_API_KEY
         } catch (e: Exception) {

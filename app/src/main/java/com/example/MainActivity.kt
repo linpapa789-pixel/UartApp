@@ -3,6 +3,7 @@ package com.example
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.activity.viewModels
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -120,17 +121,19 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        val mainViewModel: MainViewModel by viewModels()
         setContent {
+            val isDark by mainViewModel.isDarkTheme.collectAsState()
+            com.example.ui.theme.ThemeState.isDark = isDark
             MyApplicationTheme {
-                MainAppScreen()
+                MainAppScreen(mainViewModel)
             }
         }
     }
 }
 
 @Composable
-fun MainAppScreen() {
-    val mainViewModel: MainViewModel = viewModel()
+fun MainAppScreen(mainViewModel: MainViewModel) {
     var currentScreen by remember { mutableStateOf(AppScreen.DASHBOARD) }
     val drawerState = rememberDrawerState(initialValue = DrawerValue.Closed)
     val scope = rememberCoroutineScope()
