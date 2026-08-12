@@ -1,6 +1,8 @@
 package com.example.ui.screens
 
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -9,20 +11,23 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.MenuBook
+import androidx.compose.material.icons.filled.ChevronRight
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.Language
 import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Speed
 import androidx.compose.material.icons.filled.Usb
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
@@ -42,9 +47,15 @@ import com.example.ui.components.GlassCard
 import com.example.ui.viewmodel.MainViewModel
 
 @Composable
-fun SettingsScreen(viewModel: MainViewModel) {
+fun SettingsScreen(
+    viewModel: MainViewModel,
+    onNavigateToAbout: () -> Unit = {},
+    onNavigateToGuide: () -> Unit = {}
+) {
     val currentLang by viewModel.currentLanguage.collectAsState()
     val showTimestamps by viewModel.showTimestamps.collectAsState()
+    val connectionState by viewModel.usbManager.connectionState.collectAsState()
+    val baudRate = connectionState.baudRate
 
     val scrollState = rememberScrollState()
 
@@ -69,7 +80,7 @@ fun SettingsScreen(viewModel: MainViewModel) {
                         color = Color.White
                     )
                     Text(
-                        text = "Hardware Baud, Drivers, Language & Gemini Configuration",
+                        text = "Hardware Baud, Drivers, Language & System Preferences",
                         fontSize = 11.sp,
                         color = Color(0xFF94A3B8)
                     )
@@ -120,6 +131,41 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
         }
 
+        // UART Hardware Baud Rate Configuration
+        GlassCard(borderColor = Color(0xFFF59E0B)) {
+            Column {
+                Row(verticalAlignment = Alignment.CenterVertically) {
+                    Icon(Icons.Default.Speed, contentDescription = null, tint = Color(0xFFF59E0B))
+                    Spacer(modifier = Modifier.width(8.dp))
+                    Text("Default Hardware Baud Rate", fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                }
+                Spacer(modifier = Modifier.height(8.dp))
+                Text("Current: $baudRate bps (8N1 Standard Serial)", fontSize = 11.sp, color = Color(0xFF94A3B8))
+                Spacer(modifier = Modifier.height(10.dp))
+
+                Row(horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                    listOf(115200, 921600, 3000000).forEach { rate ->
+                        val isSelected = baudRate == rate
+                        Button(
+                            onClick = { viewModel.usbManager.setBaudRate(rate) },
+                            colors = ButtonDefaults.buttonColors(
+                                containerColor = if (isSelected) Color(0xFFF59E0B) else Color(0xFF2E2E32)
+                            ),
+                            shape = RoundedCornerShape(8.dp),
+                            modifier = Modifier.weight(1f)
+                        ) {
+                            Text(
+                                text = "$rate",
+                                color = if (isSelected) Color.Black else Color.White,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold
+                            )
+                        }
+                    }
+                }
+            }
+        }
+
         // Terminal Preferences Bento Box
         GlassCard {
             Column {
@@ -144,22 +190,48 @@ fun SettingsScreen(viewModel: MainViewModel) {
             }
         }
 
-        // About & App Information Bento Box
+        // Documentation & User Guide Shortcut
         GlassCard(borderColor = Color(0xFF10B981)) {
-            Column {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF10B981))
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text("About UART PRO AI v3.5", fontSize = 14.sp, color = Color.White, fontWeight = FontWeight.Bold)
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateToGuide() },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.AutoMirrored.Filled.MenuBook, contentDescription = null, tint = Color(0xFF10B981))
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text("User Manual / အသုံးပြုပုံ လမ်းညွှန်", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("ခေါင်းစဉ်အလိုက် အဆင့်ဆင့် အသုံးပြုပုံ ရှင်းလင်းချက်", fontSize = 11.sp, color = Color(0xFF94A3B8))
+                        }
+                    }
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF10B981))
                 }
-                Spacer(modifier = Modifier.height(8.dp))
-                Text(
-                    text = "Engineered for Professional Phone Technicians & Embedded Hardware Engineers in Myanmar.\n\n• USB Driver Support: CH340G, CP2102, FT232R, PL2303\n• Protocol Support: Qualcomm BootROM/XBL/PBL, MTK Preloader/LK, Exynos S-BOOT, iPhone iBoot\n• Gemini 3.5 AI Core Integrated",
-                    fontSize = 11.sp,
-                    lineHeight = 18.sp,
-                    color = Color(0xFF94A3B8)
-                )
+
+                HorizontalDivider(color = Color(0x1AFFFFFF))
+
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .clickable { onNavigateToAbout() },
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Icon(Icons.Default.Info, contentDescription = null, tint = Color(0xFF06B6D4))
+                        Spacer(modifier = Modifier.width(10.dp))
+                        Column {
+                            Text("About UART PRO AI v3.5", fontSize = 13.sp, color = Color.White, fontWeight = FontWeight.Bold)
+                            Text("Supported Hardware, Chipsets & Specs", fontSize = 11.sp, color = Color(0xFF94A3B8))
+                        }
+                    }
+                    Icon(Icons.Default.ChevronRight, contentDescription = null, tint = Color(0xFF06B6D4))
+                }
             }
         }
     }
 }
+

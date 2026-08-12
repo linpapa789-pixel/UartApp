@@ -17,6 +17,9 @@ import com.example.data.parser.SmartUartParser
 import com.example.data.repository.UartRepository
 import com.example.data.usb.SimulationDeviceType
 import com.example.data.usb.UsbSerialManager
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -100,6 +103,11 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     private val _comparisonResult = MutableStateFlow<LogComparisonResult?>(null)
     val comparisonResult: StateFlow<LogComparisonResult?> = _comparisonResult.asStateFlow()
+
+    private val _isComparing = MutableStateFlow(false)
+    val isComparing: StateFlow<Boolean> = _isComparing.asStateFlow()
+
+    private var compareJob: Job? = null
 
     // Search Query
     private val _searchQuery = MutableStateFlow("")
@@ -299,17 +307,28 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
 
     fun setGoodCompareLog(log: String) {
         _goodCompareLog.value = log
-        runComparison()
+        scheduleComparison()
     }
 
     fun setFaultCompareLog(log: String) {
         _faultCompareLog.value = log
-        runComparison()
+        scheduleComparison()
     }
 
-    private fun runComparison() {
-        if (_goodCompareLog.value.isNotBlank() && _faultCompareLog.value.isNotBlank()) {
-            _comparisonResult.value = SmartUartParser.compareLogs(_goodCompareLog.value, _faultCompareLog.value)
+    fun scheduleComparison() {
+        compareJob?.cancel()
+        if (_goodCompareLog.value.isBlank() && _faultCompareLog.value.isBlank()) {
+            _comparisonResult.value = null
+            _isComparing.value = false
+            return
+        }
+
+        _isComparing.value = true
+        compareJob = viewModelScope.launch(Dispatchers.Default) {
+            delay(250) // Debounce rapid pasting or typing
+            val result = SmartUartParser.compareLogs(_goodCompareLog.value, _faultCompareLog.value)
+            _comparisonResult.value = result
+            _isComparing.value = false
         }
     }
 

@@ -470,86 +470,132 @@ object SmartUartParser {
      * Longest Common Subsequence (LCS) Structural Diff Engine
      */
     fun compareLogs(goodLog: String, faultLog: String): LogComparisonResult {
-        val goodLines = goodLog.lines().filter { it.isNotBlank() }
-        val faultLines = faultLog.lines().filter { it.isNotBlank() }
+        try {
+            // Cap max comparison lines to 800 lines to prevent OOM / stack overflow on massive logs
+            val MAX_COMPARE_LINES = 800
+            val goodLinesAll = goodLog.lines().filter { it.isNotBlank() }
+            val faultLinesAll = faultLog.lines().filter { it.isNotBlank() }
 
-        val m = goodLines.size
-        val n = faultLines.size
+            val goodLines = goodLinesAll.take(MAX_COMPARE_LINES)
+            val faultLines = faultLinesAll.take(MAX_COMPARE_LINES)
 
-        // Build LCS DP matrix for alignment
-        val dp = Array(m + 1) { IntArray(n + 1) }
-        for (i in 1..m) {
-            for (j in 1..n) {
-                if (normalizeLine(goodLines[i - 1]) == normalizeLine(faultLines[j - 1])) {
-                    dp[i][j] = dp[i - 1][j - 1] + 1
-                } else {
-                    dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+            val m = goodLines.size
+            val n = faultLines.size
+
+            if (m == 0 && n == 0) {
+                return LogComparisonResult(
+                    similarityPercentage = 100f,
+                    totalLinesGood = 0,
+                    totalLinesFault = 0,
+                    lineDiffs = emptyList(),
+                    missingKeywords = emptyList(),
+                    stageDifferences = emptyList()
+                )
+            }
+
+            // Build LCS DP matrix for alignment safely
+            val dp = Array(m + 1) { IntArray(n + 1) }
+            for (i in 1..m) {
+                for (j in 1..n) {
+                    if (normalizeLine(goodLines[i - 1]) == normalizeLine(faultLines[j - 1])) {
+                        dp[i][j] = dp[i - 1][j - 1] + 1
+                    } else {
+                        dp[i][j] = max(dp[i - 1][j], dp[i][j - 1])
+                    }
                 }
             }
-        }
 
-        // Backtrack to construct LCS structural diff items
-        val diffItems = mutableListOf<LineDiffItem>()
-        var i = m
-        var j = n
-        var lineNum = max(m, n)
-        var matchCount = 0
+            // Backtrack to construct LCS structural diff items
+            val diffItems = mutableListOf<LineDiffItem>()
+            var i = m
+            var j = n
+            var lineNum = max(m, n)
+            var matchCount = 0
 
-        while (i > 0 || j > 0) {
-            if (i > 0 && j > 0 && normalizeLine(goodLines[i - 1]) == normalizeLine(faultLines[j - 1])) {
-                matchCount++
-                diffItems.add(
-                    0, LineDiffItem(
-                        lineNumber = lineNum--,
-                        goodLine = goodLines[i - 1],
-                        faultLine = faultLines[j - 1],
-                        status = DiffType.MATCH
+            while (i > 0 || j > 0) {
+                if (i > 0 && j > 0 && normalizeLine(goodLines[i - 1]) == normalizeLine(faultLines[j - 1])) {
+                    matchCount++
+                    diffItems.add(
+                        0, LineDiffItem(
+                            lineNumber = lineNum--,
+                            goodLine = goodLines[i - 1],
+                            faultLine = faultLines[j - 1],
+                            status = DiffType.MATCH
+                        )
                     )
-                )
-                i--
-                j--
-            } else if (j > 0 && (i == 0 || dp[i][j - 1] >= dp[i - 1][j])) {
-                diffItems.add(
-                    0, LineDiffItem(
-                        lineNumber = lineNum--,
-                        goodLine = null,
-                        faultLine = faultLines[j - 1],
-                        status = DiffType.EXTRA_IN_FAULT
+                    i--
+                    j--
+                } else if (j > 0 && (i == 0 || dp[i][j - 1] >= dp[i - 1][j])) {
+                    diffItems.add(
+                        0, LineDiffItem(
+                            lineNumber = lineNum--,
+                            goodLine = null,
+                            faultLine = faultLines[j - 1],
+                            status = DiffType.EXTRA_IN_FAULT
+                        )
                     )
-                )
-                j--
-            } else if (i > 0 && (j == 0 || dp[i][j - 1] < dp[i - 1][j])) {
-                diffItems.add(
-                    0, LineDiffItem(
-                        lineNumber = lineNum--,
-                        goodLine = goodLines[i - 1],
-                        faultLine = null,
-                        status = DiffType.MISSING_IN_FAULT
+                    j--
+                } else if (i > 0 && (j == 0 || dp[i][j - 1] < dp[i - 1][j])) {
+                    diffItems.add(
+                        0, LineDiffItem(
+                            lineNumber = lineNum--,
+                            goodLine = goodLines[i - 1],
+                            faultLine = null,
+                            status = DiffType.MISSING_IN_FAULT
+                        )
                     )
-                )
-                i--
+                    i--
+                }
             }
+
+            if (goodLinesAll.size > MAX_COMPARE_LINES || faultLinesAll.size > MAX_COMPARE_LINES) {
+                diffItems.add(
+                    LineDiffItem(
+                        lineNumber = lineNum,
+                        goodLine = null,
+                        faultLine = "[INFO: Log compared first $MAX_COMPARE_LINES lines for high performance]",
+                        status = DiffType.CHANGED
+                    )
+                )
+            }
+
+            val totalMax = max(m, n)
+            val similarity = if (totalMax > 0) (matchCount.toFloat() / totalMax) * 100f else 100f
+
+            val goodKeywords = parseLineForKeywords(goodLog).map { it.keyword }.toSet()
+            val faultKeywords = parseLineForKeywords(faultLog).map { it.keyword }.toSet()
+            val missingKeywords = (goodKeywords - faultKeywords).toList()
+
+            val goodStages = detectBootStages(goodLog).filter { it.status == StageStatus.PASSED }.map { it.stageName }
+            val faultStages = detectBootStages(faultLog).filter { it.status == StageStatus.PASSED }.map { it.stageName }
+            val stageDiffs = (goodStages - faultStages.toSet()).map { "Missing Boot Stage: $it" }
+
+            return LogComparisonResult(
+                similarityPercentage = similarity,
+                totalLinesGood = goodLinesAll.size,
+                totalLinesFault = faultLinesAll.size,
+                lineDiffs = diffItems,
+                missingKeywords = missingKeywords,
+                stageDifferences = stageDiffs
+            )
+        } catch (e: Throwable) {
+            e.printStackTrace()
+            return LogComparisonResult(
+                similarityPercentage = 0f,
+                totalLinesGood = 0,
+                totalLinesFault = 0,
+                lineDiffs = listOf(
+                    LineDiffItem(
+                        lineNumber = 1,
+                        goodLine = null,
+                        faultLine = "Error processing logs: ${e.message}",
+                        status = DiffType.CHANGED
+                    )
+                ),
+                missingKeywords = emptyList(),
+                stageDifferences = listOf("Log parsing issue detected")
+            )
         }
-
-        val totalMax = max(m, n)
-        val similarity = if (totalMax > 0) (matchCount.toFloat() / totalMax) * 100f else 100f
-
-        val goodKeywords = parseLineForKeywords(goodLog).map { it.keyword }.toSet()
-        val faultKeywords = parseLineForKeywords(faultLog).map { it.keyword }.toSet()
-        val missingKeywords = (goodKeywords - faultKeywords).toList()
-
-        val goodStages = detectBootStages(goodLog).filter { it.status == StageStatus.PASSED }.map { it.stageName }
-        val faultStages = detectBootStages(faultLog).filter { it.status == StageStatus.PASSED }.map { it.stageName }
-        val stageDiffs = (goodStages - faultStages.toSet()).map { "Missing Boot Stage: $it" }
-
-        return LogComparisonResult(
-            similarityPercentage = similarity,
-            totalLinesGood = goodLines.size,
-            totalLinesFault = faultLines.size,
-            lineDiffs = diffItems,
-            missingKeywords = missingKeywords,
-            stageDifferences = stageDiffs
-        )
     }
 
     private fun normalizeLine(line: String): String {
