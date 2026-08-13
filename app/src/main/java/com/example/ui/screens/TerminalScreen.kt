@@ -265,11 +265,7 @@ fun TerminalScreen(
                     Box {
                         Button(
                             onClick = {
-                                if (!connectionState.isConnected && !connectionState.isSimulationActive) {
-                                    simMenuExpanded = true
-                                } else {
-                                    viewModel.startUsbSimulation(SimulationDeviceType.QUALCOMM_SNAPDRAGON_FAULT)
-                                }
+                                viewModel.connectToHardwareUsb()
                             },
                             colors = ButtonDefaults.buttonColors(containerColor = SuccessGreen),
                             shape = RoundedCornerShape(10.dp)

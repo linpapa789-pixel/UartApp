@@ -149,6 +149,10 @@ class MainViewModel(application: Application) : AndroidViewModel(application) {
         _searchQuery.value = query
     }
 
+    fun connectToHardwareUsb() {
+        usbManager.autoConnectFirstAvailableDevice()
+    }
+
     fun startUsbSimulation(type: SimulationDeviceType) {
         usbManager.startSimulation(type)
     }

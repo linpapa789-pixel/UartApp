@@ -129,7 +129,7 @@ fun DashboardScreen(
                         Button(
                             onClick = {
                                 if (!connectionState.isConnected && !connectionState.isSimulationActive) {
-                                    viewModel.startUsbSimulation(SimulationDeviceType.QUALCOMM_SNAPDRAGON_FAULT)
+                                    viewModel.connectToHardwareUsb()
                                 }
                                 onNavigateToTerminal()
                             },
